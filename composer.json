@@ -1,0 +1,48 @@
+{
+  "name": "almaviacx/syllabsbundle",
+  "description": "AlmaviaCX Syllabs Bundle provide a client for the Rest API and an improvement to the tags field type for eZPlatform.",
+  "keywords": [
+    "syllabs",
+    "ezplatform",
+    "almaviacx"
+  ],
+  "homepage": "https://github.com/Novactive/AlmaviaCXCalameoBundle",
+  "type": "ezplatform-bundle",
+  "authors": [
+    {
+      "name": "AlmaviaCX",
+      "homepage": "https://almaviacx.com/",
+      "email": "dir.tech@almaviacx.com"
+    }
+  ],
+  "license": [
+    "MIT"
+  ],
+  "require": {
+    "php": "^7.2",
+    "ext-json": "*",
+    "guzzlehttp/guzzle": "^6.0",
+    "jms/serializer": "^1.0",
+    "jms/serializer-bundle": "^2.0",
+    "symfony/symfony": "^3.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "AlmaviaCX\\Syllabs\\": "src/lib",
+      "AlmaviaCX\\Syllabs\\Tests\\": "tests/Tests",
+      "AlmaviaCX\\Bundle\\Syllabs\\": "src/bundles"
+    }
+  },
+  "extra": {
+    "thanks": {
+      "name": "ezsystems/ezplatform",
+      "url": "https://github.com/ezsystems/ezplatform"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
+  },
+  "config": {
+    "sort-packages": true
+  }
+}
