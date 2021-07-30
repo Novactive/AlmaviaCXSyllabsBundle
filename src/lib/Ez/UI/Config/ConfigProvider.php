@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Novactive
  * Date: 27/07/2021
@@ -6,10 +7,13 @@
 
 declare(strict_types=1);
 
+namespace AlmaviaCX\Syllabs\Ez\UI\Config;
+
 use EzSystems\EzPlatformAdminUi\UI\Config\ProviderInterface;
 
 class ConfigProvider implements ProviderInterface
 {
+
     /**
      * @inheritDoc
      */
@@ -20,25 +24,24 @@ class ConfigProvider implements ProviderInterface
                 'news' => [
                     'sourceFields' => [
                         'title' => ['title'],
-                        'text' => ['body']
+                        'text'  => ['body'],
                     ],
                     'targetFields' => [
                         'entities' => [
                             'fieldIdentfier' => 'syllabs_tags',
-                            'parentTagId' => 1
+                            'parentTagId'    => 1,
                         ],
-                        'themes' => [
+                        'themes'   => [
                             'fieldIdentfier' => 'syllabs_tags',
-                            'parentTagId' =>1
+                            'parentTagId'    => 1,
                         ],
                         'wikitags' => [
                             'fieldIdentfier' => 'syllabs_tags',
-                            'parentTagId' => 1
-                        ]
-                    ]
-                ]
-            ]
+                            'parentTagId'    => 1,
+                        ],
+                    ],
+                ],
+            ],
         ];
     }
-
 }
