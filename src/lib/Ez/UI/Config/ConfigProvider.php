@@ -9,39 +9,29 @@ declare(strict_types=1);
 
 namespace AlmaviaCX\Syllabs\Ez\UI\Config;
 
+use AlmaviaCX\Syllabs\Ez\Config\SyllabsConfiguration;
 use EzSystems\EzPlatformAdminUi\UI\Config\ProviderInterface;
 
 class ConfigProvider implements ProviderInterface
 {
+    /** @var SyllabsConfiguration */
+    protected $configuration;
+
+    /**
+     * ConfigProvider constructor.
+     *
+     * @param SyllabsConfiguration $configuration
+     */
+    public function __construct(SyllabsConfiguration $configuration)
+    {
+        $this->configuration = $configuration;
+    }
 
     /**
      * @inheritDoc
      */
     public function getConfig()
     {
-        return [
-            'contentTypes' => [
-                'news' => [
-                    'sourceFields' => [
-                        'title' => ['title'],
-                        'text'  => ['body'],
-                    ],
-                    'targetFields' => [
-                        'entities' => [
-                            'fieldIdentfier' => 'syllabs_tags',
-                            'parentTagId'    => 1,
-                        ],
-                        'themes'   => [
-                            'fieldIdentfier' => 'syllabs_tags',
-                            'parentTagId'    => 1,
-                        ],
-                        'wikitags' => [
-                            'fieldIdentfier' => 'syllabs_tags',
-                            'parentTagId'    => 1,
-                        ],
-                    ],
-                ],
-            ],
-        ];
+        return $this->configuration->getUiConfiguration();
     }
 }

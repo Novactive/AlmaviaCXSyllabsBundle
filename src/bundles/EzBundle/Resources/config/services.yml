@@ -8,7 +8,14 @@ services:
         # this means you cannot fetch services directly from the container via $container->get()
         # if you need to do this, you can override this setting on individual services
         public: false
+        bind:
+            $tagsService: '@eztags.api.service.tags'
 
+    AlmaviaCX\Syllabs\Ez\Config\SyllabsConfiguration:
     AlmaviaCX\Syllabs\Ez\UI\Config\ConfigProvider:
         tags:
             - { name: ezplatform.admin_ui.config_provider, key: 'syllabs' }
+
+    AlmaviaCX\Syllabs\Ez\Form\Extension\ContentEditTypeExtension:
+        tags:
+            - { name: form.type_extension, extended_type: EzSystems\RepositoryForms\Form\Type\Content\ContentFieldType }
