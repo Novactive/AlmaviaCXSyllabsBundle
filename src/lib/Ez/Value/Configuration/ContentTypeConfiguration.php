@@ -5,6 +5,7 @@
  */
 
 declare(strict_types=1);
+
 namespace AlmaviaCX\Syllabs\Ez\Value\Configuration;
 
 use eZ\Publish\API\Repository\Values\ContentType\ContentType;
@@ -14,7 +15,7 @@ class ContentTypeConfiguration
     /** @var string */
     protected $contentTypeIdentifier;
 
-    /** @var SourceFieldConfiguration */
+    /** @var SourceFieldConfiguration[] */
     protected $sourceFields;
 
     /** @var TargetFieldConfiguration[] */
@@ -24,14 +25,11 @@ class ContentTypeConfiguration
      * ContentTypeConfiguration constructor.
      *
      * @param string                     $contentTypeIdentifier
-     * @param SourceFieldConfiguration   $sourceFields
+     * @param SourceFieldConfiguration[] $sourceFields
      * @param TargetFieldConfiguration[] $targetFields
      */
-    public function __construct(
-        string $contentTypeIdentifier,
-        SourceFieldConfiguration $sourceFields,
-        array $targetFields
-    ) {
+    public function __construct(string $contentTypeIdentifier, array $sourceFields, array $targetFields)
+    {
         $this->contentTypeIdentifier = $contentTypeIdentifier;
         $this->sourceFields = $sourceFields;
         $this->targetFields = $targetFields;
@@ -46,9 +44,9 @@ class ContentTypeConfiguration
     }
 
     /**
-     * @return SourceFieldConfiguration
+     * @return SourceFieldConfiguration[]
      */
-    public function getSourceFields(): SourceFieldConfiguration
+    public function getSourceFields(): array
     {
         return $this->sourceFields;
     }

@@ -81,12 +81,14 @@ class SyllabsConfiguration
                     );
                 }
 
+                $sourceFields = [];
+                foreach ($rawConfiguration['source_fields'] as $sourceFieldType=>$fieldsIdentifiers) {
+                    $sourceFields[] = new SourceFieldConfiguration($sourceFieldType, $fieldsIdentifiers);
+                }
+
                 $configuration[$contentTypeIdentifier] = new ContentTypeConfiguration(
                     $contentTypeIdentifier,
-                    new SourceFieldConfiguration(
-                        $rawConfiguration['source_fields']['title'],
-                        $rawConfiguration['source_fields']['text']
-                    ),
+                    $sourceFields,
                     $targetFields
                 );
             }
@@ -106,11 +108,13 @@ class SyllabsConfiguration
                     'parentTagId' => $targetField->getParentTag()->id
                 ];
             }
+            $sourceFields = [];
+            foreach ($configuration->getSourceFields() as $sourceField) {
+                $sourceFields[$sourceField->getType()] = $sourceField->getFieldsIdentifiers();
+            }
+
             $uiConfiguration['contentTypes'][$configuration->getContentTypeIdentifier()] = [
-                'sourceFields' => [
-                    'title' => $configuration->getSourceFields()->getTitle(),
-                    'text' => $configuration->getSourceFields()->getText()
-                ],
+                'sourceFields' => $sourceFields,
                 'targetFields' => $targetFields
             ];
         }

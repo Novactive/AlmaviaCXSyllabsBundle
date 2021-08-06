@@ -19,6 +19,7 @@ use EzSystems\RepositoryForms\Form\Type\Content\ContentEditType;
 use EzSystems\RepositoryForms\Form\Type\Content\ContentFieldType;
 use Symfony\Component\Form\AbstractTypeExtension;
 use Symfony\Component\Form\Extension\Core\Type\ButtonType;
+use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormEvent;
@@ -40,95 +41,43 @@ class ContentEditTypeExtension extends AbstractTypeExtension
     }
 
     /**
-     * @param Form $form
-     *
-     * @return ContentCreateData|ContentUpdateData|null
-     */
-    protected function getContentData(Form $form)
-    {
-        $parentForm = $form->getParent();
-        if(!$parentForm) {
-             return null;
-        }
-        $parentData = $parentForm ? $parentForm->getData() : null;
-        if ($parentData instanceof ContentCreateData || $parentData instanceof ContentUpdateData) {
-            return $parentData;
-        }
-        return $this->getContentData($parentForm);
-    }
-
-    protected function getContentTypeIdentifier(Form $form): ?string
-    {
-        $contentData = $this->getContentData($form);
-        if ($contentData instanceof ContentCreateData) {
-            return $contentData->contentType->identifier;
-        } elseif ($contentData instanceof ContentUpdateData) {
-            return $contentData->contentDraft->getContentType()->identifier;
-        }
-        return null;
-    }
-
-    protected function getContentTypeConfiguration(Form $form): ?ContentTypeConfiguration
-    {
-        $contentTypeIdentifier = $this->getContentTypeIdentifier($form);
-        if (!$contentTypeIdentifier) {
-            return null;
-        }
-
-        return $this->configuration->getContentTypeConfiguration($contentTypeIdentifier);
-    }
-
-    protected function getSuggesterConfig(ContentTypeConfiguration $configuration, string $fieldIdentifier): ?array
-    {
-        $config = [];
-
-        $targetFields = $configuration->getTargetFields();
-        foreach ($targetFields as $targetField) {
-            if($targetField->getFieldIdentifier() === $fieldIdentifier) {
-                $config[$targetField->getType()] = $targetField->getParentTag()->id;
-            }
-        }
-
-        return !empty($config) ? $config : null;
-    }
-
-        /**
      * @param \Symfony\Component\Form\FormBuilderInterface $builder
      * @param array                                        $options
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->addEventListener(
-            FormEvents::PRE_SET_DATA,
+            FormEvents::POST_SET_DATA,
             function (FormEvent $event) {
 
                 /** @var Form $form */
                 $form = $event->getForm();
 
-                $configuration = $this->getContentTypeConfiguration($form);
-                if (!$configuration) {
-                    return;
-                }
+                $contentTypeIdentifier = $this->getContentTypeIdentifier($form);
+                $form->add(
+                    'contentTypeIdentifier',
+                    HiddenType::class,
+                    [
+                        'data' => $contentTypeIdentifier,
+                        'mapped' => false
+                    ]
+                );
 
-                /** @var FieldData $fieldData */
-                $fieldData = $event->getData();
-                $suggesterConfig = $this->getSuggesterConfig($configuration, $fieldData->fieldDefinition->identifier);
-
-                if($suggesterConfig) {
-                    $form->add(
-                        'syllabs_suggester',
-                        ButtonType::class,
-                        [
-                            'attr' => [
-                                'class' => 'syllabs-suggester btn btn-primary',
-                                'data-suggester-config' => json_encode($suggesterConfig)
-                            ]
-                        ]
-                    );
-                }
-
-            }, -10000
+            },
+            -10000
         );
+    }
+
+    protected function getContentTypeIdentifier(Form $form): ?string
+    {
+        $contentData = $form->getData();
+        if ($contentData instanceof ContentCreateData) {
+            return $contentData->contentType->identifier;
+        } elseif ($contentData instanceof ContentUpdateData) {
+            return $contentData->contentDraft->getContentType()->identifier;
+        }
+
+        return null;
     }
 
     /**
@@ -136,6 +85,6 @@ class ContentEditTypeExtension extends AbstractTypeExtension
      */
     public function getExtendedType(): string
     {
-        return ContentFieldType::class;
+        return ContentEditType::class;
     }
 }

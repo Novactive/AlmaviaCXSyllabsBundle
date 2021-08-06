@@ -11,37 +11,37 @@ namespace AlmaviaCX\Syllabs\Ez\Value\Configuration;
 
 class SourceFieldConfiguration
 {
-    /** @var string[] */
-    protected $title;
+    /** @var string */
+    protected $type;
 
     /** @var string[] */
-    protected $text;
+    protected $fieldsIdentifiers;
 
     /**
      * SourceFieldConfiguration constructor.
      *
-     * @param string[] $title
-     * @param string[] $text
+     * @param string   $type
+     * @param string[] $fieldsIdentifiers
      */
-    public function __construct(array $title, array $text)
+    public function __construct(string $type, array $fieldsIdentifiers)
     {
-        $this->title = $title;
-        $this->text = $text;
+        $this->type = $type;
+        $this->fieldsIdentifiers = $fieldsIdentifiers;
     }
 
     /**
-     * @return array
+     * @return string
      */
-    public function getTitle(): array
+    public function getType(): string
     {
-        return $this->title;
+        return $this->type;
     }
 
     /**
-     * @return array
+     * @return string[]
      */
-    public function getText(): array
+    public function getFieldsIdentifiers(): array
     {
-        return $this->text;
+        return $this->fieldsIdentifiers;
     }
 }
