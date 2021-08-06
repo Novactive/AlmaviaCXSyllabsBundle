@@ -47,9 +47,9 @@ class ProcessGateway
 
         $response = $this->client->call($datas, self::URL);
 
-        $documents = json_decode($response->getBody(true)->getContents(), true);
+        $resultDoc = json_decode($response->getBody(true)->getContents(), true);
 
-        return $this->responseParser->parseDocuments($documents['documents']);
+        return $this->responseParser->parseDocuments($resultDoc['documents'], $documents);
     }
 
 }

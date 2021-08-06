@@ -2,6 +2,7 @@
 
 namespace AlmaviaCX\Syllabs\API\Parser;
 
+use AlmaviaCX\Syllabs\API\Value\Document;
 use AlmaviaCX\Syllabs\API\Value\EntityAnnotation;
 use AlmaviaCX\Syllabs\API\Value\ThemeAnnotation;
 use AlmaviaCX\Syllabs\API\Value\WikitagAnnotation;
@@ -9,30 +10,30 @@ use AlmaviaCX\Syllabs\API\Value\WikitagAnnotation;
 class ResponseParser
 {
     /**
-     * @param array $documents
+     * @param array $resultDoc
+     * @param Document[] $documents
      *
      * @return array
      */
-    public function parseDocuments(array $documents): array
+    public function parseDocuments(array $resultDoc, array $documents): array
     {
-        $results = [];
-        foreach ($documents as $document) {
-            $result['id']          = $document['id'];
-            $result['annotations'] = $this->parseResults($document['full_text']);
-            $results[]             = $result;
+        $newDocs = [];
+        foreach ($resultDoc as $result) {
+            $newDocs[] = $this->parseResults($result['full_text'], $documents[$result['id']]);
         }
 
-        return $results;
+        return $newDocs;
     }
 
     /**
      * @param array $results
+     * @param Document $currentDoc
      *
-     * @return array
+     * @return Document
      */
-    public function parseResults(array $results): array
+    public function parseResults(array $results, $currentDoc): Document
     {
-        $entities = $this->parseAnnotations(
+        $currentDoc->entities = $this->parseAnnotations(
             $results['entities'],
             EntityAnnotation::class,
             [
@@ -42,7 +43,7 @@ class ResponseParser
             ]
         );
 
-        $themes = $this->parseAnnotations(
+        $currentDoc->themes = $this->parseAnnotations(
             $results['themes'],
             ThemeAnnotation::class,
             [
@@ -51,7 +52,7 @@ class ResponseParser
             ]
         );
 
-        $wikitags = $this->parseAnnotations(
+        $currentDoc->wikitags = $this->parseAnnotations(
             $results['wikitags'],
             WikitagAnnotation::class,
             [
@@ -61,11 +62,7 @@ class ResponseParser
             ]
         );
 
-        return [
-            'entities' => $entities,
-            'themes'   => $themes,
-            'wikitags' => $wikitags
-        ];
+        return $currentDoc;
     }
 
     /**

@@ -18,4 +18,17 @@ class EntityAnnotation extends Annotation
             $this->$property = $value;
         }
     }
+
+    /**
+     * @param $property
+     *
+     * @return mixed
+     */
+    public function __get($property)
+    {
+        if (property_exists($this, $property)) {
+            return $this->$property;
+        }
+    }
+
 }
