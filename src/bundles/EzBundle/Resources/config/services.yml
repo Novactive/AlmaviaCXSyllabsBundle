@@ -19,3 +19,6 @@ services:
     AlmaviaCX\Syllabs\Ez\Form\Extension\ContentEditTypeExtension:
         tags:
             - { name: form.type_extension, extended_type: EzSystems\RepositoryForms\Form\Type\Content\ContentFieldType }
+
+    AlmaviaCX\Bundle\Syllabs\EzBundle\Controller\ApiController:
+        tags: [controller.service_arguments]
