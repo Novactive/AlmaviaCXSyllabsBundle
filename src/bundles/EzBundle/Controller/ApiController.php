@@ -11,35 +11,38 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ApiController extends AbstractController
 {
+    /** @var ProcessService */
+    protected $processService;
+
     /**
-     * @Route("/syllabs/process", methods={"POST"}, name="syllabs_process")
+     * ApiController constructor.
+     *
+     * @param ProcessService $processService
      */
-    public function processAction(Request $request, ProcessService $processService)
+    public function __construct(ProcessService $processService)
     {
-        $docProp = [
-            'id'    => $request->get('id'),
-            'title' => $request->get('title'),
-            'text'  => $request->get('text')
-        ];
-        $doc = new Document($docProp);
-
-        $syllabsDocs = $processService->process([$docProp['id'] => $doc]);
-
-        $tags = [];
-        foreach ($syllabsDocs as $syllabsDoc) {
-
-            foreach ($syllabsDoc->entities as $entity) {
-                $tags[] = $entity->text;
-            }
-            foreach ($syllabsDoc->themes as $theme) {
-                $tags[] = $theme->text;
-            }
-            foreach ($syllabsDoc->wikitags as $wikitag) {
-                $tags[] = $wikitag->text;
-            }
-        }
-
-        return new JsonResponse($tags);
+        $this->processService = $processService;
     }
 
+    /**
+     * @Route("/syllabs/process", methods={"POST"}, name="syllabs_process", options={"expose": true})
+     */
+    public function processAction(Request $request)
+    {
+        if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
+            $docProp = json_decode($request->getContent(), true);
+        } else {
+            $docProp = [
+                'id'    => $request->get('id'),
+                'title' => $request->get('title'),
+                'text'  => $request->get('text')
+            ];
+        }
+
+        $doc = new Document($docProp);
+
+        $syllabsDocs = $this->processService->process([$docProp['id'] => $doc]);
+
+        return new JsonResponse($syllabsDocs);
+    }
 }

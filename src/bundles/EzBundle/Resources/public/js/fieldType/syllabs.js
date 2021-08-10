@@ -7,8 +7,13 @@ class Suggester {
     this.sourceFields = sourceFields
   }
 
+  /**
+   * @returns {{id: number}}
+   */
   getSourceValues() {
-    const values = {}
+    const values = {
+      id: 123
+    }
     for (const [sourceFieldsType, sourceFields] of this.sourceFields) {
       const typeValues = []
       for (const sourceField of sourceFields) {
@@ -18,7 +23,8 @@ class Suggester {
     }
     return values
   }
-  open({onConfirm, onCancel}) {
+
+  open(config, {onConfirm, onCancel}) {
     const sourceValues = this.getSourceValues()
     ReactDOM.render(
         React.createElement(
@@ -29,7 +35,9 @@ class Suggester {
                   onCancel,
                   title: this.title,
                   restInfo: this.restInfo,
-                }
+                  sourceValues
+                },
+                config
             ),
         ),
         this.container,
@@ -44,7 +52,7 @@ class Suggester {
 class TagField {
   constructor(container, fieldIdentifier, suggester) {
     this.inputs = new Map();
-    this.annotationTypes = [];
+    this.annotationTypeConfigs = [];
 
     for (const inputName of TagField.inputNames) {
       const inputFullName = `ezrepoforms_content_edit[fieldsData][${fieldIdentifier}][value][${inputName}]`;
@@ -64,8 +72,8 @@ class TagField {
     this.suggester = suggester
   }
 
-  addAnnotationType(annotationType) {
-    this.annotationTypes.push(annotationType)
+  addAnnotationTypeConfig(annotationType, config) {
+    this.annotationTypeConfigs[annotationType] = config
   }
 
   addTag(tag) {
@@ -89,11 +97,14 @@ class TagField {
     event.preventDefault();
     event.stopPropagation();
 
-    const onConfirm = (tags) => {
-
+    const onConfirm = (suggestions) => {
+      console.log(suggestions)
     };
     const onCancel = () => this.suggester.close();
-    this.suggester.open({onConfirm, onCancel})
+    const config = {
+      annotationTypeConfigs: this.annotationTypeConfigs
+    }
+    this.suggester.open(config, {onConfirm, onCancel})
   }
 }
 TagField.inputNames = [
@@ -149,7 +160,9 @@ TagField.inputSeparator = '|#';
       tagFields.set(fieldIdentifier, tagField)
     }
 
-    tagField.addAnnotationType(targetFieldType)
+    tagField.addAnnotationTypeConfig(targetFieldType, {
+      parentTagId: contentTypeConfig.targetFields[targetFieldType].parentTagId
+    })
   }
 
 })(window, document, window.eZ, window.React, window.ReactDOM,

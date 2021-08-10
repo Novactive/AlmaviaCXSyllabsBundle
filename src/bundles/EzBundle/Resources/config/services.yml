@@ -21,4 +21,3 @@ services:
             - { name: form.type_extension, extended_type: EzSystems\RepositoryForms\Form\Type\Content\ContentEditType }
 
     AlmaviaCX\Bundle\Syllabs\EzBundle\Controller\ApiController:
-        tags: [controller.service_arguments]

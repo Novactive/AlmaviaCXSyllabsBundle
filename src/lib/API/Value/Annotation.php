@@ -2,7 +2,7 @@
 
 namespace AlmaviaCX\Syllabs\API\Value;
 
-class Annotation
+class Annotation implements \JsonSerializable
 {
     /** @var float */
     protected $score;
@@ -34,4 +34,14 @@ class Annotation
         }
     }
 
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'score' => $this->score,
+            'text' => $this->text
+        ];
+    }
 }

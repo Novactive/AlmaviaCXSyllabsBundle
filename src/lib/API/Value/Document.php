@@ -2,25 +2,25 @@
 
 namespace AlmaviaCX\Syllabs\API\Value;
 
-class Document
+class Document implements \JsonSerializable
 {
     /** @var int */
     protected $id;
 
-    /** @var string */
+    /** @var string[] */
     protected $title;
 
-    /** @var string */
+    /** @var string[] */
     protected $text;
 
     /** @var EntityAnnotation[] */
-    public $entities;
+    protected $entities;
 
     /** @var ThemeAnnotation[] */
-    public $themes;
+    protected $themes;
 
     /** @var WikitagAnnotation[] */
-    public $wikitags;
+    protected $wikitags;
 
     /**
      * Document constructor.
@@ -34,11 +34,91 @@ class Document
         }
     }
 
-    public function __get($property)
+    /**
+     * @return int
+     */
+    public function getId(): int
     {
-        if (property_exists($this, $property)) {
-            return $this->$property;
-        }
+        return $this->id;
     }
 
+    /**
+     * @return string[]
+     */
+    public function getTitle(): array
+    {
+        return $this->title;
+    }
+
+    /**
+     * @return string[]
+     */
+    public function getText(): array
+    {
+        return $this->text;
+    }
+
+    /**
+     * @return EntityAnnotation[]
+     */
+    public function getEntities(): array
+    {
+        return $this->entities;
+    }
+
+    /**
+     * @param EntityAnnotation[] $entities
+     */
+    public function setEntities(array $entities): void
+    {
+        $this->entities = $entities;
+    }
+
+    /**
+     * @return ThemeAnnotation[]
+     */
+    public function getThemes(): array
+    {
+        return $this->themes;
+    }
+
+    /**
+     * @param ThemeAnnotation[] $themes
+     */
+    public function setThemes(array $themes): void
+    {
+        $this->themes = $themes;
+    }
+
+    /**
+     * @return WikitagAnnotation[]
+     */
+    public function getWikitags(): array
+    {
+        return $this->wikitags;
+    }
+
+    /**
+     * @param WikitagAnnotation[] $wikitags
+     */
+    public function setWikitags(array $wikitags): void
+    {
+        $this->wikitags = $wikitags;
+    }
+
+
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize()
+    {
+        return [
+            'id'       => $this->id,
+            'title'    => $this->title,
+            'text'     => $this->text,
+            'entities' => $this->entities,
+            'themes'   => $this->themes,
+            'wikitags' => $this->wikitags,
+        ];
+    }
 }

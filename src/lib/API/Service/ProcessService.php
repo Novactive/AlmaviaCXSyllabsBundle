@@ -21,13 +21,12 @@ class ProcessService
     }
 
     /**
-     * @param array $documents
+     * @param Document[] $documents
      *
-     * @return array
+     * @return Document[]
      */
     public function process(array $documents): array
     {
         return $this->gateway->process($documents);
     }
-
 }

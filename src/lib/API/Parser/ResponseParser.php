@@ -10,7 +10,7 @@ use AlmaviaCX\Syllabs\API\Value\WikitagAnnotation;
 class ResponseParser
 {
     /**
-     * @param array $resultDoc
+     * @param array      $resultDoc
      * @param Document[] $documents
      *
      * @return array
@@ -26,40 +26,46 @@ class ResponseParser
     }
 
     /**
-     * @param array $results
+     * @param array    $results
      * @param Document $currentDoc
      *
      * @return Document
      */
-    public function parseResults(array $results, $currentDoc): Document
+    public function parseResults(array $results, Document $currentDoc): Document
     {
-        $currentDoc->entities = $this->parseAnnotations(
-            $results['entities'],
-            EntityAnnotation::class,
-            [
-                'text'  => 'text',
-                'score' => 'score',
-                'type'  => 'type'
-            ]
+        $currentDoc->setEntities(
+            $this->parseAnnotations(
+                $results['entities'],
+                EntityAnnotation::class,
+                [
+                    'text'  => 'text',
+                    'score' => 'score',
+                    'type'  => 'type',
+                ]
+            )
         );
 
-        $currentDoc->themes = $this->parseAnnotations(
-            $results['themes'],
-            ThemeAnnotation::class,
-            [
-                'name'  => 'text',
-                'score' => 'score'
-            ]
+        $currentDoc->setThemes(
+            $this->parseAnnotations(
+                $results['themes'],
+                ThemeAnnotation::class,
+                [
+                    'name'  => 'text',
+                    'score' => 'score',
+                ]
+            )
         );
 
-        $currentDoc->wikitags = $this->parseAnnotations(
-            $results['wikitags'],
-            WikitagAnnotation::class,
-            [
-                'name'  => 'text',
-                'score' => 'score',
-                'url'   => 'url'
-            ]
+        $currentDoc->setWikitags(
+            $this->parseAnnotations(
+                $results['wikitags'],
+                WikitagAnnotation::class,
+                [
+                    'name'  => 'text',
+                    'score' => 'score',
+                    'url'   => 'url',
+                ]
+            )
         );
 
         return $currentDoc;
@@ -108,5 +114,4 @@ class ResponseParser
 
         return new $className($fields);
     }
-
 }

@@ -30,7 +30,9 @@ class ProcessGateway
     }
 
     /**
-     * @param array $documents
+     * @param Document[] $documents
+     *
+     * @return Document[]
      */
     public function process(array $documents): array
     {
@@ -38,9 +40,9 @@ class ProcessGateway
 
         foreach ($documents as $document) {
             $dataDoc              = [
-                'id'    => $document->id,
-                'title' => $document->title,
-                'text'  => $document->text
+                'id'    => "{$document->getId()}",
+                'title' => implode(', ', $document->getTitle()),
+                'text'  => implode(', ', $document->getText())
             ];
             $datas['documents'][] = $dataDoc;
         }
@@ -51,5 +53,4 @@ class ProcessGateway
 
         return $this->responseParser->parseDocuments($resultDoc['documents'], $documents);
     }
-
 }
