@@ -5,6 +5,7 @@ namespace AlmaviaCX\Bundle\Syllabs\EzBundle\Controller;
 use AlmaviaCX\Syllabs\API\Service\ProcessService;
 use AlmaviaCX\Syllabs\API\Value\Document;
 use Netgen\TagsBundle\API\Repository\TagsService;
+use Netgen\TagsBundle\API\Repository\Values\Tags\TagCreateStruct;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -54,7 +55,7 @@ class ApiController extends AbstractController
 
     /**
      * @param Request     $request
-     * @Route("/create/tags", methods={"POST"}, name="create_tags")
+     * @Route("/create/tags", methods={"GET"}, name="create_tags")
      */
     public function tagsAction(Request $request)
     {
@@ -74,55 +75,20 @@ class ApiController extends AbstractController
 
             if (is_null($newTag)) {
                 $tagCreateStruct = new TagCreateStruct();
-                $tagCreateStruct->setKeyword($keyword);
+                $tagCreateStruct->setKeyword($keyword, 'fre-FR');
                 $tagCreateStruct->parentTagId      = $parentTagId;
                 $tagCreateStruct->mainLanguageCode = 'fre-FR';
                 $newTag = $this->tagsService->createTag($tagCreateStruct);
-                $newTags[] = [
-                    'id' => $newTag->id,
-                    'parentTagId' => 
-                ];
             }
 
-
-            // Boucler sur tags
-            // Vérifier le parent, si tag avec bon partent $tag = ce tag
-            // Sinon $tag = null
-
-            // Après la boucle, si tag null, alors on le crée
-
-            // Ajouter tag dans newTags
-
-
-            // Dans newtags, ajouter tableau associatif avec "id / parentTagId / keywords"
-
-            if (empty($tags)) {
-                /* @todo créer le tag sous le*/
-                $tagCreateStruct = new TagCreateStruct();
-                $tagCreateStruct->setKeyword($keyword);
-                $tagCreateStruct->parentTagId      = $parentTagId;
-                $tagCreateStruct->mainLanguageCode = 'fre-FR';
-                $newTag = $this->tagsService->createTag($tagCreateStruct);
-                $newTags[] = $newTag;
-            } else {
-                // Vérifier le parent
-                // Si différent, créer un nouveau
-            }
-
+            $newTags[] = [
+                'id'          => $newTag->id,
+                'parentTagId' => $newTag->parentTagId,
+                'keywords'    => $newTag->keywords
+            ];
         }
 
-        exit("tags créés");
-        echo"<pre>";print_r($tags);echo"</pre>";die;
-
-
-        echo"<pre>";print_r($request->get('entities'));echo"</pre>";die;
-
-
-        //        entities:
-        //        parent_tag: 123
-        //  keywords:
-        //     - Test 1
-        //            - Test 2
+        echo"<pre>";print_r($newTags);echo"</pre>";die;
         return new JsonResponse(true);
 
     }
