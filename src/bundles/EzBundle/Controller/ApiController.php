@@ -4,8 +4,7 @@ namespace AlmaviaCX\Bundle\Syllabs\EzBundle\Controller;
 
 use AlmaviaCX\Syllabs\API\Service\ProcessService;
 use AlmaviaCX\Syllabs\API\Value\Document;
-use Netgen\TagsBundle\API\Repository\TagsService;
-use Netgen\TagsBundle\API\Repository\Values\Tags\TagCreateStruct;
+use AlmaviaCX\Syllabs\Ez\Service\SuggestionService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -16,18 +15,19 @@ class ApiController extends AbstractController
     /** @var ProcessService */
     protected $processService;
 
-    /** @var TagsService $tagsService */
-    protected $tagsService;
+    /** @var SuggestionService $suggestionService */
+    protected $suggestionService;
 
     /**
      * ApiController constructor.
      *
-     * @param ProcessService $processService
+     * @param ProcessService    $processService
+     * @param SuggestionService $suggestionService
      */
-    public function __construct(ProcessService $processService, TagsService $tagsService)
+    public function __construct(ProcessService $processService, SuggestionService $suggestionService)
     {
-        $this->processService = $processService;
-        $this->tagsService    = $tagsService;
+        $this->processService    = $processService;
+        $this->suggestionService = $suggestionService;
     }
 
     /**
@@ -63,33 +63,9 @@ class ApiController extends AbstractController
         $parentTagId = 345;
         $keywords = ["Ambition", 'Inégalité'];
         foreach ($keywords as $keyword) {
-            $newTag = null;
-
-            $tags = $this->tagsService->loadTagsByKeyword($keyword, 'fre-FR');
-
-            foreach ($tags as $tag) {
-                if ($tag->parentTagId == $parentTagId) {
-                    $newTag = $tag;
-                }
-            }
-
-            if (is_null($newTag)) {
-                $tagCreateStruct = new TagCreateStruct();
-                $tagCreateStruct->setKeyword($keyword, 'fre-FR');
-                $tagCreateStruct->parentTagId      = $parentTagId;
-                $tagCreateStruct->mainLanguageCode = 'fre-FR';
-                $newTag = $this->tagsService->createTag($tagCreateStruct);
-            }
-
-            $newTags[] = [
-                'id'          => $newTag->id,
-                'parentTagId' => $newTag->parentTagId,
-                'keywords'    => $newTag->keywords
-            ];
+            $newTags[] = $this->suggestionService->createTag($keyword, 'fre-FR', $parentTagId);
         }
 
-        echo"<pre>";print_r($newTags);echo"</pre>";die;
-        return new JsonResponse(true);
-
+        return new JsonResponse($newTags);
     }
 }
