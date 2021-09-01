@@ -21,7 +21,7 @@ class ProcessGateway
     protected $responseParser;
 
     /** @var string */
-    const URL = "/process";
+    private const URL = "/process";
 
     public function __construct(HttpClient $client, ResponseParser $responseParser)
     {
@@ -36,7 +36,9 @@ class ProcessGateway
      */
     public function process(array $documents): array
     {
-        $datas['processes'] = ['all'];
+        $datas = [
+            'processes' => ['all']
+        ];
 
         foreach ($documents as $document) {
             $dataDoc              = [

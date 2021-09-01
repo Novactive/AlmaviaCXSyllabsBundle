@@ -68,7 +68,8 @@ class ApiController extends AbstractController
 
     /**
      * @param Request $request
-     * @Route("/syllabs/create-suggestions", methods={"POST"}, name="syllabs_create_suggestions", options={"expose": true})
+     * @Route("/syllabs/create-suggestions", methods={"POST"}, name="syllabs_create_suggestions",
+     *     options={"expose": true})
      */
     public function tagsAction(Request $request)
     {
@@ -82,7 +83,11 @@ class ApiController extends AbstractController
 
         $newTags = [];
         foreach ($params['suggestions'] as $suggestion) {
-            $tag = $this->suggestionService->createTag($suggestion['text'], $suggestion['parentTagId'], $params['languageCode']);
+            $tag = $this->suggestionService->createTag(
+                $suggestion['text'],
+                $suggestion['parentTagId'],
+                $params['languageCode']
+            );
 
             $newTags[] = [
                 'id'          => $tag->id,
