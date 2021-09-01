@@ -24,5 +24,4 @@ class HttpClient extends Client
 
         return $this->request('POST', $uri, $options);
     }
-
 }

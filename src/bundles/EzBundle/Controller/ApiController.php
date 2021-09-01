@@ -26,25 +26,24 @@ class ApiController extends AbstractController
      */
     public function __construct(ProcessService $processService, SuggestionService $suggestionService)
     {
-        $this->processService    = $processService;
+        $this->processService = $processService;
         $this->suggestionService = $suggestionService;
     }
 
     /**
-     * @param Request     $request
+     * @param Request $request
      * @Route("/syllabs/process", methods={"POST"}, name="syllabs_process", options={"expose": true})
      */
     public function processAction(Request $request)
     {
-        if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
-            $docProp = json_decode($request->getContent(), true);
-        } else {
-            $docProp = [
-                'id'    => $request->get('id'),
-                'title' => $request->get('title'),
-                'text'  => $request->get('text')
-            ];
-        }
+        $docProp = $this->processRequest(
+            $request,
+            [
+                'id',
+                'title',
+                'text',
+            ]
+        );
 
         $doc = new Document($docProp);
 
@@ -53,17 +52,43 @@ class ApiController extends AbstractController
         return new JsonResponse($syllabsDocs);
     }
 
+    protected function processRequest(Request $request, array $keys): ?array
+    {
+        if (0 === strpos($request->headers->get('Content-Type'), 'application/json')) {
+            return json_decode($request->getContent(), true);
+        } else {
+            $values = [];
+            foreach ($keys as $key) {
+                $values[$key] = $request->get($key);
+            }
+
+            return $values;
+        }
+    }
+
     /**
-     * @param Request     $request
-     * @Route("/create/tags", methods={"GET"}, name="create_tags")
+     * @param Request $request
+     * @Route("/syllabs/create-suggestions", methods={"POST"}, name="syllabs_create_suggestions", options={"expose": true})
      */
     public function tagsAction(Request $request)
     {
+        $params = $this->processRequest(
+            $request,
+            [
+                'suggestions',
+                'languageCode',
+            ]
+        );
+
         $newTags = [];
-        $parentTagId = 345;
-        $keywords = ["Ambition", 'Inégalité'];
-        foreach ($keywords as $keyword) {
-            $newTags[] = $this->suggestionService->createTag($keyword, 'fre-FR', $parentTagId);
+        foreach ($params['suggestions'] as $suggestion) {
+            $tag = $this->suggestionService->createTag($suggestion['text'], $suggestion['parentTagId'], $params['languageCode']);
+
+            $newTags[] = [
+                'id'          => $tag->id,
+                'parentTagId' => $tag->parentTagId,
+                'keywords'    => $tag->keywords,
+            ];
         }
 
         return new JsonResponse($newTags);

@@ -4,6 +4,7 @@ namespace AlmaviaCX\Syllabs\Ez\Service;
 
 use AlmaviaCX\Syllabs\API\Service\ProcessService;
 use Netgen\TagsBundle\API\Repository\TagsService;
+use Netgen\TagsBundle\API\Repository\Values\Tags\Tag;
 use Netgen\TagsBundle\API\Repository\Values\Tags\TagCreateStruct;
 
 class SuggestionService
@@ -21,29 +22,19 @@ class SuggestionService
         $this->tagsService = $tagsService;
     }
 
-    public function createTag(string $keyword, string $language, int $parentTagId)
+    public function createTag(string $keyword, int $parentTagId, string $language): Tag
     {
-        $newTag = null;
         $tags   = $this->tagsService->loadTagsByKeyword($keyword, $language);
         foreach ($tags as $tag) {
             if ($tag->parentTagId == $parentTagId) {
-                $newTag = $tag;
+                return $tag;
             }
         }
 
-        if (is_null($newTag)) {
-            $tagCreateStruct = new TagCreateStruct();
-            $tagCreateStruct->setKeyword($keyword, 'fre-FR');
-            $tagCreateStruct->parentTagId      = $parentTagId;
-            $tagCreateStruct->mainLanguageCode = 'fre-FR';
-            $newTag                            = $this->tagsService->createTag($tagCreateStruct);
-        }
-
-        return [
-            'id'          => $newTag->id,
-            'parentTagId' => $newTag->parentTagId,
-            'keywords'    => $newTag->keywords
-        ];
+        $tagCreateStruct = new TagCreateStruct();
+        $tagCreateStruct->setKeyword($keyword, $language);
+        $tagCreateStruct->parentTagId      = $parentTagId;
+        $tagCreateStruct->mainLanguageCode = $language;
+        return $this->tagsService->createTag($tagCreateStruct);
     }
-
 }

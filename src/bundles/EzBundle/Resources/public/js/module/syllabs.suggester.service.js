@@ -18,3 +18,23 @@ export const loadSuggestions = ({body}, callback) => {
   .then(callback)
   .catch(showErrorNotification);
 }
+
+
+export const createSuggestions = ({body}, callback) => {
+  const endpoint = window.Routing.generate('syllabs_create_suggestions');
+  const request = new Request(endpoint, {
+    method: 'POST',
+    body: JSON.stringify(body),
+    mode: 'same-origin',
+    credentials: 'same-origin',
+    headers: {
+      'Content-type': 'application/json'
+    }
+  });
+
+  fetch(request)
+  .then(handleRequestResponse)
+  .then(callback)
+  .catch(showErrorNotification);
+}
+

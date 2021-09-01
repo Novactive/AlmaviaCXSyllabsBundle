@@ -27,5 +27,4 @@ class ThemeAnnotation extends Annotation
             return $this->$property;
         }
     }
-
 }

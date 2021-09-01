@@ -1,10 +1,12 @@
 <?php
+
 /**
  * @copyright Novactive
  * Date: 30/07/2021
  */
 
 declare(strict_types=1);
+
 namespace AlmaviaCX\Syllabs\Ez\Config;
 
 use AlmaviaCX\Syllabs\Ez\Value\Configuration\ContentTypeConfiguration;
@@ -12,6 +14,7 @@ use AlmaviaCX\Syllabs\Ez\Value\Configuration\SourceFieldConfiguration;
 use AlmaviaCX\Syllabs\Ez\Value\Configuration\TargetFieldConfiguration;
 use AlmaviaCX\Syllabs\Ez\Value\Configuration\TargetFieldTypeConfiguration;
 use eZ\Publish\API\Repository\ContentTypeService;
+use eZ\Publish\Core\MVC\ConfigResolverInterface;
 use Netgen\TagsBundle\API\Repository\TagsService;
 
 class SyllabsConfiguration
@@ -22,42 +25,29 @@ class SyllabsConfiguration
     /** @var TagsService */
     protected $tagsService;
 
+    /** @var ConfigResolverInterface */
+    protected $configResolver;
+
     /**
      * SyllabsConfiguration constructor.
      *
      * @param ContentTypeService $contentTypeService
-     * @param TagsService        $tagsService
+     * @param TagsService $tagsService
+     * @param ConfigResolverInterface $configResolver
      */
-    public function __construct(ContentTypeService $contentTypeService, TagsService $tagsService)
-    {
+    public function __construct(
+        ContentTypeService $contentTypeService,
+        TagsService $tagsService,
+        ConfigResolverInterface $configResolver
+    ) {
         $this->contentTypeService = $contentTypeService;
         $this->tagsService = $tagsService;
+        $this->configResolver = $configResolver;
     }
 
-    protected function getRawConfigurations(): array {
-        return [
-            'news' => [
-                'content_type_identifiers' => ['news'],
-                'source_fields' => [
-                    'title' => ['title'],
-                    'text'  => ['body'],
-                ],
-                'target_fields' => [
-                    'entities' => [
-                        'field_identifier' => 'syllabs_tags',
-                        'parent_tag'    => 1,
-                    ],
-                    'themes'   => [
-                        'field_identifier' => 'syllabs_tags',
-                        'parent_tag'    => 1,
-                    ],
-                    'wikitags' => [
-                        'field_identifier' => 'syllabs_tags',
-                        'parent_tag'    => 1,
-                    ],
-                ],
-            ],
-        ];
+    protected function getRawConfigurations(): array
+    {
+        return $this->configResolver->getParameter('syllabs.config', 'almaviacx');
     }
 
     /**
@@ -72,7 +62,7 @@ class SyllabsConfiguration
         foreach ($rawConfigurations as $rawConfiguration) {
             foreach ($rawConfiguration['content_type_identifiers'] as $contentTypeIdentifier) {
                 $targetFields = [];
-                foreach ($rawConfiguration['target_fields'] as $targetFieldType=>$targetField) {
+                foreach ($rawConfiguration['target_fields'] as $targetFieldType => $targetField) {
                     $parentTag = is_int($targetField['parent_tag']) ? $this->tagsService->loadTag($targetField['parent_tag']) : $this->tagsService->loadTagByRemoteId($targetField['parent_tag']);
                     $targetFields[] = new TargetFieldConfiguration(
                         $targetFieldType,
@@ -82,7 +72,7 @@ class SyllabsConfiguration
                 }
 
                 $sourceFields = [];
-                foreach ($rawConfiguration['source_fields'] as $sourceFieldType=>$fieldsIdentifiers) {
+                foreach ($rawConfiguration['source_fields'] as $sourceFieldType => $fieldsIdentifiers) {
                     $sourceFields[] = new SourceFieldConfiguration($sourceFieldType, $fieldsIdentifiers);
                 }
 

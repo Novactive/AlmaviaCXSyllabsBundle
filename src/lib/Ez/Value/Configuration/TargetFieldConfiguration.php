@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Novactive
  * Date: 30/07/2021
@@ -7,7 +8,6 @@
 declare(strict_types=1);
 
 namespace AlmaviaCX\Syllabs\Ez\Value\Configuration;
-
 
 use Netgen\TagsBundle\API\Repository\Values\Tags\Tag;
 
@@ -59,5 +59,4 @@ class TargetFieldConfiguration
     {
         return $this->parentTag;
     }
-
 }

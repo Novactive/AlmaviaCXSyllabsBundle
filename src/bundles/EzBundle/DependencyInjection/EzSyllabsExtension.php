@@ -12,9 +12,10 @@ namespace AlmaviaCX\Bundle\Syllabs\EzBundle\DependencyInjection;
 use Symfony\Component\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
+use Symfony\Component\DependencyInjection\Extension\PrependExtensionInterface;
 use Symfony\Component\DependencyInjection\Loader\YamlFileLoader;
 
-class EzSyllabsExtension extends Extension
+class EzSyllabsExtension extends Extension implements PrependExtensionInterface
 {
     /**
      * @inheritDoc
@@ -26,5 +27,20 @@ class EzSyllabsExtension extends Extension
             new FileLocator(__DIR__ . '/../Resources/config')
         );
         $loader->load('services.yml');
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function prepend(ContainerBuilder $container)
+    {
+        $container->prependExtensionConfig(
+            'bazinga_js_translation',
+            [
+                'active_domains' => [
+                    'syllabs',
+                ],
+            ]
+        );
     }
 }

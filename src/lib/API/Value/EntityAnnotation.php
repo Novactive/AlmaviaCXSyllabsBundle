@@ -30,5 +30,4 @@ class EntityAnnotation extends Annotation
             return $this->$property;
         }
     }
-
 }

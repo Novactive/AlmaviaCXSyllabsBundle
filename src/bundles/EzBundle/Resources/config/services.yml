@@ -1,3 +1,6 @@
+parameters:
+    almaviacx.default.syllabs.api.url: ~
+    almaviacx.default.syllabs.config: []
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -11,7 +14,15 @@ services:
         bind:
             $tagsService: '@eztags.api.service.tags'
 
+    almaviacx.syllabs.api.httpclient.siteaccessaware:
+        lazy: true
+        class: AlmaviaCX\Syllabs\API\HttpClient
+        decorates: AlmaviaCX\Syllabs\API\HttpClient
+        arguments:
+            $APIUrl: "$syllabs.api.url;almaviacx$"
+
     AlmaviaCX\Syllabs\Ez\Config\SyllabsConfiguration:
+
     AlmaviaCX\Syllabs\Ez\UI\Config\ConfigProvider:
         tags:
             - { name: ezplatform.admin_ui.config_provider, key: 'syllabs' }
@@ -25,3 +36,4 @@ services:
             $tagsService: '@eztags.api.service.tags.inner'
 
     AlmaviaCX\Bundle\Syllabs\EzBundle\Controller\ApiController:
+

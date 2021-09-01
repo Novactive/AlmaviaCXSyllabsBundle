@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Novactive
  * Date: 30/07/2021
@@ -58,5 +59,4 @@ class ContentTypeConfiguration
     {
         return $this->targetFields;
     }
-
 }

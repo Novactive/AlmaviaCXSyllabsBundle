@@ -1,10 +1,10 @@
 class Suggester {
   constructor(container, restInfo, sourceFields) {
     this.title = Translator.trans(/*@Desc("Select location")*/
-        'add_location.title', {}, 'universal_discovery_widget');
-    this.container = container
-    this.restInfo = restInfo
-    this.sourceFields = sourceFields
+        'suggester.title', {}, 'syllabs');
+    this.container = container;
+    this.restInfo = restInfo;
+    this.sourceFields = sourceFields;
   }
 
   /**
@@ -12,20 +12,20 @@ class Suggester {
    */
   getSourceValues() {
     const values = {
-      id: 123
-    }
+      id: 123,
+    };
     for (const [sourceFieldsType, sourceFields] of this.sourceFields) {
-      const typeValues = []
+      const typeValues = [];
       for (const sourceField of sourceFields) {
-        typeValues.push(sourceField.value)
+        typeValues.push(sourceField.value);
       }
-      values[sourceFieldsType] = typeValues
+      values[sourceFieldsType] = typeValues;
     }
-    return values
+    return values;
   }
 
   open(config, {onConfirm, onCancel}) {
-    const sourceValues = this.getSourceValues()
+    const sourceValues = this.getSourceValues();
     ReactDOM.render(
         React.createElement(
             eZ.modules.SyllabsSuggester,
@@ -35,9 +35,9 @@ class Suggester {
                   onCancel,
                   title: this.title,
                   restInfo: this.restInfo,
-                  sourceValues
+                  sourceValues,
                 },
-                config
+                config,
             ),
         ),
         this.container,
@@ -50,8 +50,9 @@ class Suggester {
 }
 
 class TagField {
-  constructor(container, fieldIdentifier, suggester) {
+  constructor(container, fieldIdentifier, suggester, languageCode) {
     this.inputs = new Map();
+    this.container = container;
     this.annotationTypeConfigs = [];
 
     for (const inputName of TagField.inputNames) {
@@ -69,18 +70,27 @@ class TagField {
     const label = container.querySelector('label.ez-field-edit__label');
     label.parentNode.append(suggestBtn);
 
-    this.suggester = suggester
+    this.suggester = suggester;
+    this.languageCode = languageCode;
   }
 
   addAnnotationTypeConfig(annotationType, config) {
-    this.annotationTypeConfigs[annotationType] = config
+    this.annotationTypeConfigs[annotationType] = config;
   }
 
   addTag(tag) {
-    this.updateInput('tagids', tag.id);
-    this.updateInput('taglocales', tag.locale);
-    this.updateInput('tagpids', tag.parent_id);
-    this.updateInput('tagnames', tag.name);
+    this.updateInput('ids', tag.id);
+    this.updateInput('locales', tag.locale);
+    this.updateInput('parent_ids', tag.parent_id);
+    this.updateInput('keywords', tag.name);
+    const eZTagsPlugin = jQuery('.tagssuggest', this.container).data('EzTags');
+
+    eZTagsPlugin.add({
+      id: tag.id,
+      name: tag.name,
+      locale: tag.locale,
+      parent_id: tag.parent_id
+    })
   }
 
   updateInput(inputName, inputValue) {
@@ -88,9 +98,20 @@ class TagField {
      * @type {HTMLInputElement}
      */
     const input = this.inputs.get(inputName);
-    const currentValue = input.value.explode(TagField.inputSeparator);
+    const currentValue = input.value != '' ? input.value.split(TagField.inputSeparator) : [];
     currentValue.push(inputValue);
     input.value = currentValue.join(TagField.inputSeparator);
+  }
+
+  addTags(suggestions) {
+    for (const suggestion of suggestions) {
+      this.addTag({
+        id: suggestion.id,
+        locale: this.languageCode,
+        name: suggestion.keywords[this.languageCode],
+        parent_id: suggestion.parentTagId,
+      });
+    }
   }
 
   openSuggester(event) {
@@ -98,71 +119,91 @@ class TagField {
     event.stopPropagation();
 
     const onConfirm = (suggestions) => {
-      console.log(suggestions)
+      jQuery('.tagssuggest', this.container).EzTags('initialize');
+
+      const jstreeEl = jQuery('.tags-tree', this.container)
+      const addTags = this.addTags.bind(this)
+      if(jstreeEl) {
+        jstreeEl.on('refresh.jstree', function (e, data) {
+          addTags(suggestions)
+        }.bind(this));
+      }else {
+        addTags(suggestions)
+      }
+
+      this.suggester.close();
     };
+
     const onCancel = () => this.suggester.close();
     const config = {
-      annotationTypeConfigs: this.annotationTypeConfigs
-    }
-    this.suggester.open(config, {onConfirm, onCancel})
+      annotationTypeConfigs: this.annotationTypeConfigs,
+      languageCode: this.languageCode,
+    };
+    this.suggester.open(config, {onConfirm, onCancel});
   }
 }
+
 TagField.inputNames = [
-  'tagids',
-  'taglocales',
-  'tagpids',
-  'tagnames',
+  'ids',
+  'locales',
+  'parent_ids',
+  'keywords',
 ];
 TagField.inputSeparator = '|#';
 
 (function(global, doc, eZ, React, ReactDOM, Translator) {
   const syllabsConfig = global.eZ.adminUiConfig.syllabs;
-  const contentTypeIdentifier = doc.querySelector('input[name="ezrepoforms_content_edit[contentTypeIdentifier]"]').value;
-  const contentTypeConfig = syllabsConfig.contentTypes[contentTypeIdentifier]
-  if(typeof contentTypeConfig === 'undefined') {
-    return
+  const contentTypeIdentifier = doc.querySelector(
+      'input[name="ezrepoforms_content_edit[contentTypeIdentifier]"]').value;
+  const languageCode = doc.querySelector(
+      'input[name="ezrepoforms_content_edit[languageCode]"]').value;
+  const contentTypeConfig = syllabsConfig.contentTypes[contentTypeIdentifier];
+  if (typeof contentTypeConfig === 'undefined') {
+    return;
   }
 
-  const sourceFields = new Map()
-  for(const sourceFieldType in contentTypeConfig.sourceFields) {
-    const fields = sourceFields.has(sourceFieldType) ? sourceFields.get(sourceFieldType) : []
+  const sourceFields = new Map();
+  for (const sourceFieldType in contentTypeConfig.sourceFields) {
+    const fields = sourceFields.has(sourceFieldType) ? sourceFields.get(
+        sourceFieldType) : [];
     for (const sourceFieldsIdentifier of contentTypeConfig.sourceFields[sourceFieldType]) {
-      const sourceFieldEl = document.querySelector(`[name="ezrepoforms_content_edit[fieldsData][${sourceFieldsIdentifier}][value]"]`)
-      if(sourceFieldEl) {
-        fields.push(sourceFieldEl)
+      const sourceFieldEl = document.querySelector(`[name="ezrepoforms_content_edit[fieldsData][${sourceFieldsIdentifier}][value]"]`);
+      if (sourceFieldEl) {
+        fields.push(sourceFieldEl);
       }
     }
 
-    sourceFields.set(sourceFieldType, fields)
+    sourceFields.set(sourceFieldType, fields);
   }
 
   const suggesterContainer = doc.getElementById('react-udw');
   const token = doc.querySelector('meta[name="CSRF-Token"]').content;
   const siteaccess = doc.querySelector('meta[name="SiteAccess"]').content;
-  const suggester = new Suggester(suggesterContainer, {token, siteaccess}, sourceFields)
+  const suggester = new Suggester(suggesterContainer, {token, siteaccess},
+      sourceFields);
 
-
-
-  const tagFields = new Map()
-  for(const targetFieldType in contentTypeConfig.targetFields) {
-    const fieldIdentifier = contentTypeConfig.targetFields[targetFieldType].fieldIdentfier
-    let tagField = tagFields.has(fieldIdentifier) ? tagFields.get(fieldIdentifier) : null
-    if(!tagField) {
-      const targetFieldEl = document.querySelector(`input[name^="ezrepoforms_content_edit[fieldsData][${fieldIdentifier}]"]`)
-      if(!targetFieldEl) {
-        continue
+  const tagFields = new Map();
+  for (const targetFieldType in contentTypeConfig.targetFields) {
+    const fieldIdentifier = contentTypeConfig.targetFields[targetFieldType].fieldIdentfier;
+    let tagField = tagFields.has(fieldIdentifier) ? tagFields.get(
+        fieldIdentifier) : null;
+    if (!tagField) {
+      const targetFieldEl = document.querySelector(`input[name^="ezrepoforms_content_edit[fieldsData][${fieldIdentifier}]"]`);
+      if (!targetFieldEl) {
+        continue;
       }
       tagField = new TagField(
           targetFieldEl.closest('.ez-field-edit'),
           fieldIdentifier,
-          suggester
-      )
-      tagFields.set(fieldIdentifier, tagField)
+          suggester,
+          languageCode,
+      );
+      tagFields.set(fieldIdentifier, tagField);
     }
 
     tagField.addAnnotationTypeConfig(targetFieldType, {
-      parentTagId: contentTypeConfig.targetFields[targetFieldType].parentTagId
-    })
+      parentTagId: contentTypeConfig.targetFields[targetFieldType].parentTagId,
+    });
   }
 
 })(window, document, window.eZ, window.React, window.ReactDOM,

@@ -30,5 +30,4 @@ class WikitagAnnotation extends Annotation
             return $this->$property;
         }
     }
-
 }

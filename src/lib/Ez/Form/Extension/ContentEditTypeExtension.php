@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @copyright Novactive
  * Date: 30/07/2021
@@ -54,6 +55,7 @@ class ContentEditTypeExtension extends AbstractTypeExtension
                 $form = $event->getForm();
 
                 $contentTypeIdentifier = $this->getContentTypeIdentifier($form);
+                $languageCode = $this->getContentLanguageCode($form);
                 $form->add(
                     'contentTypeIdentifier',
                     HiddenType::class,
@@ -61,8 +63,14 @@ class ContentEditTypeExtension extends AbstractTypeExtension
                         'data' => $contentTypeIdentifier,
                         'mapped' => false
                     ]
+                );$form->add(
+                    'languageCode',
+                    HiddenType::class,
+                    [
+                        'data' => $languageCode,
+                        'mapped' => false
+                    ]
                 );
-
             },
             -10000
         );
@@ -75,6 +83,18 @@ class ContentEditTypeExtension extends AbstractTypeExtension
             return $contentData->contentType->identifier;
         } elseif ($contentData instanceof ContentUpdateData) {
             return $contentData->contentDraft->getContentType()->identifier;
+        }
+
+        return null;
+    }
+
+    protected function getContentLanguageCode(Form $form): ?string
+    {
+        $contentData = $form->getData();
+        if ($contentData instanceof ContentCreateData) {
+            return $contentData->mainLanguageCode;
+        } elseif ($contentData instanceof ContentUpdateData) {
+            return $contentData->contentDraft->contentInfo->mainLanguageCode;
         }
 
         return null;
