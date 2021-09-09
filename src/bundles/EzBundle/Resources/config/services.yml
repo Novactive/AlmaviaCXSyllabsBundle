@@ -35,5 +35,7 @@ services:
         bind:
             $tagsService: '@eztags.api.service.tags.inner'
 
-    AlmaviaCX\Bundle\Syllabs\EzBundle\Controller\ApiController:
+    AlmaviaCX\Bundle\Syllabs\EzBundle\Controller\ApiController: ~
+
+    AlmaviaCX\Bundle\Syllabs\EzBundle\Command\CreateTagCommand: ~
 
