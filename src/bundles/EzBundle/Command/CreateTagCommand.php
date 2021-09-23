@@ -13,6 +13,7 @@ use eZ\Publish\API\Repository\Values\Content\Query;
 use eZ\Publish\API\Repository\Values\ContentType\FieldDefinitionUpdateStruct;
 use eZ\Publish\Core\Base\Exceptions\ContentFieldValidationException;
 use eZ\Publish\Core\Repository\SearchService;
+use MCC\Bundle\CultureGouvBundle\Helper\TagsHelper;
 use Netgen\TagsBundle\API\Repository\TagsService;
 use Netgen\TagsBundle\Core\FieldType\Tags\Value as TagsValue;
 use Symfony\Component\Console\Command\Command;
@@ -41,6 +42,9 @@ class CreateTagCommand extends Command
     /** @var TagsService */
     protected $tagsService;
 
+    /** @var TagsHelper */
+    protected $tagsHelper;
+
     /**
      * CreateTagCommand constructor.
      *
@@ -48,19 +52,23 @@ class CreateTagCommand extends Command
      * @param ProcessService       $processService
      * @param SuggestionService    $suggestionService
      * @param SyllabsConfiguration $syllabsConfiguration
+     * @param TagsService          $tagsService
+     * @param TagsHelper           $tagsHelper
      */
     public function __construct(
         Repository $repository,
         ProcessService $processService,
         SuggestionService $suggestionService,
         SyllabsConfiguration $syllabsConfiguration,
-        TagsService $tagsService
+        TagsService $tagsService,
+        TagsHelper $tagsHelper
     ) {
         $this->repository           = $repository;
         $this->processService       = $processService;
         $this->suggestionService    = $suggestionService;
         $this->syllabsConfiguration = $syllabsConfiguration;
         $this->tagsService          = $tagsService;
+        $this->tagsHelper           = $tagsHelper;
 
         parent::__construct(self::$defaultName);
     }
@@ -102,16 +110,6 @@ class CreateTagCommand extends Command
         $sourceFields  = $syllabsConfig->getSourceFields();
         $targetFields  = $syllabsConfig->getTargetFields();
 
-        $fieldDefinitionIdentifiers = ['tags', 'eztag_region', 'published_date', 'picture'];
-        $this->repository->sudo(
-            function () use (
-                $contentType,
-                $fieldDefinitionIdentifiers
-            ) {
-                $this->updateContentType($contentType, $fieldDefinitionIdentifiers, false);
-            }
-        );
-
         do {
             $searchResults = $searchService->findContent($query);
             if (0 === $query->offset) {
@@ -140,12 +138,10 @@ class CreateTagCommand extends Command
 
                 $this->repository->sudo(
                     function () use (
-                        $contentService,
                         $content,
                         $currentLanguage,
                         $syllabsDocs,
-                        $targetFields,
-                        $io
+                        $targetFields
                     ) {
                         $doc = $syllabsDocs[0];
 
@@ -155,38 +151,19 @@ class CreateTagCommand extends Command
                             'wikitags' => $doc->getWikitags()
                         ];
 
-                        $contentDraft        = $contentService->createContentDraft($content->contentInfo);
-                        $contentUpdateStruct = $contentService->newContentUpdateStruct();
-
                         $tags = [];
                         /** @var TargetFieldConfiguration $targetFieldConfiguration */
                         foreach ($targetFields as $targetFieldConfiguration) {
                             $syllabsTags = $syllabsDoc[$targetFieldConfiguration->getType()];
-                            foreach ($syllabsTags as $annotation) {
-                                $tags[] = $this->suggestionService->createTag($annotation->text,
+                            foreach ($syllabsTags as $syllabsTag) {
+                                $tags[] = $this->suggestionService->createTag($syllabsTag->text,
                                                                               $targetFieldConfiguration->getParentTag(
                                                                               )->id,
                                                                               $currentLanguage
                                 );
                             }
-                            $tagsValue = new TagsValue($tags);
-                            $contentUpdateStruct->setField($targetFieldConfiguration->getFieldIdentifier(), $tagsValue);
-                        }
-
-                        try {
-                            $contentDraft = $contentService->updateContent(
-                                $contentDraft->versionInfo,
-                                $contentUpdateStruct
-                            );
-                            $content      = $contentService->publishVersion($contentDraft->versionInfo);
-                        } catch (ContentFieldValidationException $e) {
-                            $io->text("Error while updating content {$content->id} - {$content->getName()}");
-                            echo"<pre>";print_r($e->getFieldErrors());echo"</pre>";
-//                            foreach($e->getFieldErrors() as $errors) {
-//                                foreach ($errors['fre-FR'] as $error) {
-//                                    $io->error($error->getTranslatableMessage());
-//                                }
-//                            }
+                            $field = $content->getField($targetFieldConfiguration->getFieldIdentifier());
+                            $this->tagsHelper->addTagsToContent($tags, $field, $content);
                         }
                     }
                 );
@@ -195,16 +172,6 @@ class CreateTagCommand extends Command
             $query->offset += $query->limit;
         }
         while ($query->offset <= $searchResults->totalCount);
-
-        $this->repository->sudo(
-            function () use (
-                $contentType,
-                $fieldDefinitionIdentifiers
-            ) {
-                $this->updateContentType($contentType, $fieldDefinitionIdentifiers, true);
-            }
-        );
-
     }
 
     /**
@@ -227,39 +194,6 @@ class CreateTagCommand extends Command
         }
 
         return $fieldContent;
-    }
-
-    /**
-     * @param string $contentTypeIdentifier
-     * @param array  $fieldDefinitionIdentifiers
-     * @param bool   $required
-     *
-     * @throws \eZ\Publish\API\Repository\Exceptions\BadStateException
-     * @throws \eZ\Publish\API\Repository\Exceptions\InvalidArgumentException
-     * @throws \eZ\Publish\API\Repository\Exceptions\NotFoundException
-     * @throws \eZ\Publish\API\Repository\Exceptions\UnauthorizedException
-     */
-    protected function updateContentType(
-        string $contentTypeIdentifier,
-        array $fieldDefinitionIdentifiers,
-        bool $required
-    ) {
-        $contentTypeService = $this->repository->getContentTypeService();
-        $contentType        = $contentTypeService->loadContentTypeByIdentifier($contentTypeIdentifier);
-        $contentTypeDraft   = $contentTypeService->createContentTypeDraft($contentType);
-
-        foreach ($fieldDefinitionIdentifiers as $fieldDefinitionIdentifier) {
-            $fieldDefinition                         = $contentType->getFieldDefinition($fieldDefinitionIdentifier);
-            $fieldDefinitionUpdateStruct             = $contentTypeService->newFieldDefinitionUpdateStruct();
-            $fieldDefinitionUpdateStruct->isRequired = $required;
-            $contentTypeService->updateFieldDefinition(
-                $contentTypeDraft,
-                $fieldDefinition,
-                $fieldDefinitionUpdateStruct
-            );
-        }
-
-        $contentTypeService->publishContentTypeDraft($contentTypeDraft);
     }
 
 }
