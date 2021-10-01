@@ -102,7 +102,6 @@ class CreateTagCommand extends Command
 
         $progressBar    = new ProgressBar($output);
         $searchService  = $this->repository->getSearchService();
-        $contentService = $this->repository->getContentService();
 
         $io->text("Search {$contentType} content to update with Syllabs tags");
 
@@ -156,10 +155,11 @@ class CreateTagCommand extends Command
                         foreach ($targetFields as $targetFieldConfiguration) {
                             $syllabsTags = $syllabsDoc[$targetFieldConfiguration->getType()];
                             foreach ($syllabsTags as $syllabsTag) {
-                                $tags[] = $this->suggestionService->createTag($syllabsTag->text,
-                                                                              $targetFieldConfiguration->getParentTag(
-                                                                              )->id,
-                                                                              $currentLanguage
+                                $tags[] = $this->suggestionService->createTag(
+                                    $syllabsTag->text,
+                                    $targetFieldConfiguration->getParentTag(
+                                    )->id,
+                                    $currentLanguage
                                 );
                             }
                             $field = $content->getField($targetFieldConfiguration->getFieldIdentifier());
@@ -170,8 +170,7 @@ class CreateTagCommand extends Command
                 $progressBar->advance();
             }
             $query->offset += $query->limit;
-        }
-        while ($query->offset <= $searchResults->totalCount);
+        } while ($query->offset <= $searchResults->totalCount);
     }
 
     /**
@@ -195,5 +194,4 @@ class CreateTagCommand extends Command
 
         return $fieldContent;
     }
-
 }

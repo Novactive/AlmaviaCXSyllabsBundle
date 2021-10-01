@@ -1,0 +1,7 @@
+language: php
+before_install:
+    - 'echo $TOKEN_NOVA_DROID | docker login ghcr.io -u $LOGIN_CI --password-stdin'
+    - 'docker pull ghcr.io/novactive/novadroid:latest'
+    - null
+script:
+    - 'docker run --rm -it -v $(pwd):/project ghcr.io/novactive/novadroid:latest check --handlers=php,process,twig,yaml'
