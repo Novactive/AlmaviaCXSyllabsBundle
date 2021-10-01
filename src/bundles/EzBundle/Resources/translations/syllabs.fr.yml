@@ -1,2 +1,8 @@
 suggester:
     title: Suggestions
+
+suggestion:
+    type:
+        entities: Entités
+        themes: Thèmes
+        wikitags: Wikitags
