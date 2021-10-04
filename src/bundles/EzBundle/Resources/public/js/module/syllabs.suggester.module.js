@@ -12,8 +12,12 @@ export default class SyllabsSuggesterModule extends Component {
   constructor(props, context) {
     super(props, context);
 
+    this._refMainContainer;
+    this._refContentContainer;
+
     this.state = {
       suggestions: [],
+      maxHeight: 500
     };
   }
 
@@ -25,6 +29,12 @@ export default class SyllabsSuggesterModule extends Component {
           this.updateSuggestions(document);
         },
     );
+    window.addEventListener('resize', this.updateMaxHeightState, false);
+
+    this.setState(() => ({
+      maxHeight: this._refContentContainer.clientHeight,
+      mainContainerRestHeight: this._refMainContainer.clientHeight - this._refContentContainer.clientHeight,
+    }));
   }
 
   /**
@@ -71,11 +81,18 @@ export default class SyllabsSuggesterModule extends Component {
    * @returns {JSX.Element}
    */
   renderSuggestion(suggestion) {
-    return <div className="form-check" key={suggestion.text}>
+    return <dd className="form-check" key={suggestion.text}>
       <SyllabsSuggestionComponent suggestion={suggestion}
                                   onClick={this.onSuggestionClick.bind(this,
                                       suggestion)}/>
-    </div>;
+    </dd>;
+  }
+
+  renderSuggestionType(type, suggestions) {
+    return <dl key={type}>
+      <dt className={'mb-2'}>{Translator.trans('suggestion.type.'+type, {}, 'syllabs')}</dt>
+      {suggestions.map(this.renderSuggestion.bind(this))}
+    </dl>
   }
 
   /**
@@ -121,6 +138,42 @@ export default class SyllabsSuggesterModule extends Component {
     return <button {...attrs}>{confirmBtnLabel}</button>;
   }
 
+  renderSuggestionsByType() {
+    const types = new Map()
+    for(const suggestion of this.state.suggestions) {
+      const typeSuggestions = types.get(suggestion.type) || []
+      typeSuggestions.push(suggestion)
+      types.set(suggestion.type, typeSuggestions)
+    }
+
+    const render = []
+    for (const [type, suggestions] of types) {
+      render.push(this.renderSuggestionType(type, suggestions))
+    }
+
+    return render
+  }
+
+  setMainContainerRef(ref) {
+    this._refMainContainer = ref;
+  }
+
+  setContentContainerRef(ref) {
+    this._refContentContainer = ref;
+  }
+
+  /**
+   * Updates the maxHeight state
+   *
+   * @method updateMaxHeightState
+   * @memberof UniversalDiscoveryModule
+   */
+  updateMaxHeightState() {
+    this.setState(() => ({
+      maxHeight: this._refMainContainer.clientHeight - this.state.mainContainerRestHeight,
+    }));
+  }
+
   render() {
     const componentClassName = 'm-ud syllabs-suggester-module';
     let containerClassName = `${componentClassName}`;
@@ -131,17 +184,21 @@ export default class SyllabsSuggesterModule extends Component {
     }
     return (
         <div className="m-ud__wrapper">
-          <div className={containerClassName}>
+          <div className={containerClassName} ref={this.setMainContainerRef.bind(this)}>
             <h1 className="m-ud__title">{this.props.title}</h1>
             <div className="m-ud__content-wrapper">
-              <div className="m-ud__content">
-                <div className="loader">
-                  <svg className="ez-icon ez-spin">
-                    <use
-                        xlinkHref="/bundles/ezplatformadminui/img/ez-icons.svg#spinner"></use>
-                  </svg>
+              <div className="m-ud__content" ref={this.setContentContainerRef.bind(this)}>
+                <div className="m-ud__panels">
+                  <div className="loader">
+                    <svg className="ez-icon ez-spin">
+                      <use
+                          xlinkHref="/bundles/ezplatformadminui/img/ez-icons.svg#spinner"></use>
+                    </svg>
+                  </div>
+                  <div className="suggestions-panel" style={{ maxHeight: `${this.state.maxHeight - 96}px` }}>
+                    {this.renderSuggestionsByType()}
+                  </div>
                 </div>
-                {this.state.suggestions.map(this.renderSuggestion.bind(this))}
               </div>
               <div className="m-ud__actions">
                 <div className="m-ud__btns">
@@ -159,6 +216,8 @@ export default class SyllabsSuggesterModule extends Component {
     );
   }
 }
+
+
 
 eZ.addConfig('modules.SyllabsSuggester', SyllabsSuggesterModule);
 
