@@ -22,7 +22,7 @@ class SuggestionService
         $this->tagsService = $tagsService;
     }
 
-    public function createTag(string $keyword, int $parentTagId, string $language): Tag
+    public function createTag(string $keyword, int $parentTagId, string $language, bool $visible = false): Tag
     {
         $tags   = $this->tagsService->loadTagsByKeyword($keyword, $language);
         foreach ($tags as $tag) {
@@ -35,6 +35,9 @@ class SuggestionService
         $tagCreateStruct->setKeyword($keyword, $language);
         $tagCreateStruct->parentTagId      = $parentTagId;
         $tagCreateStruct->mainLanguageCode = $language;
+        if ($visible) {
+            $tagCreateStruct->visible = true;
+        }
         return $this->tagsService->createTag($tagCreateStruct);
     }
 }

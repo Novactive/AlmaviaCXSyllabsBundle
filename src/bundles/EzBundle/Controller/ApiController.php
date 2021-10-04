@@ -86,7 +86,8 @@ class ApiController extends AbstractController
             $tag = $this->suggestionService->createTag(
                 $suggestion['text'],
                 $suggestion['parentTagId'],
-                $params['languageCode']
+                $params['languageCode'],
+                true
             );
 
             $newTags[] = [
