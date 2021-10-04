@@ -87,13 +87,25 @@ class CreateTagCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io          = new SymfonyStyle($input, $output);
+
         $contentType = $input->getArgument('content_type');
+        $location    = $this->repository->getLocationService()->loadLocation($input->getArgument('parent_location_id'));
+
+        $syllabsConfig = $this->syllabsConfiguration->getContentTypeConfiguration($contentType);
+        $sourceFields  = $syllabsConfig->getSourceFields();
+        $targetFields  = $syllabsConfig->getTargetFields();
+
+        $orCriterion = [];
+        foreach ($targetFields as $targetField) {
+            $orCriterion[] = new Query\Criterion\IsFieldEmpty($targetField->getFieldIdentifier(), true);
+        }
 
         $query     = new Query();
         $criterion = new Query\Criterion\LogicalAnd(
             [
                 new Query\Criterion\ContentTypeIdentifier($contentType),
-                new Query\Criterion\ParentLocationId($input->getArgument('parent_location_id'))
+                new Query\Criterion\Subtree($location->pathString),
+                new Query\Criterion\LogicalOr($orCriterion)
             ]
         );
 
@@ -104,10 +116,6 @@ class CreateTagCommand extends Command
         $searchService  = $this->repository->getSearchService();
 
         $io->text("Search {$contentType} content to update with Syllabs tags");
-
-        $syllabsConfig = $this->syllabsConfiguration->getContentTypeConfiguration($contentType);
-        $sourceFields  = $syllabsConfig->getSourceFields();
-        $targetFields  = $syllabsConfig->getTargetFields();
 
         do {
             $searchResults = $searchService->findContent($query);
