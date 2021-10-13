@@ -22,18 +22,23 @@ class TargetFieldConfiguration
     /** @var Tag */
     protected $parentTag;
 
+    /** @var string */
+    protected $subtype;
+
     /**
      * TargetFieldConfiguration constructor.
      *
      * @param string $type
      * @param string $fieldIdentifier
      * @param Tag    $parentTag
+     * @param string $subtype
      */
-    public function __construct(string $type, string $fieldIdentifier, Tag $parentTag)
+    public function __construct(string $type, string $fieldIdentifier, Tag $parentTag, string $subtype)
     {
-        $this->type = $type;
+        $this->type            = $type;
         $this->fieldIdentifier = $fieldIdentifier;
-        $this->parentTag = $parentTag;
+        $this->parentTag       = $parentTag;
+        $this->subtype         = $subtype;
     }
 
     /**
@@ -58,5 +63,13 @@ class TargetFieldConfiguration
     public function getParentTag(): Tag
     {
         return $this->parentTag;
+    }
+
+    /**
+     * @return string
+     */
+    public function getSubtype(): string
+    {
+        return $this->subtype;
     }
 }

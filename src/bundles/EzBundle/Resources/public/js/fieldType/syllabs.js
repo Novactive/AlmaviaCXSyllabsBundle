@@ -183,8 +183,9 @@ TagField.inputSeparator = '|#';
       sourceFields);
 
   const tagFields = new Map();
-  for (const targetFieldType in contentTypeConfig.targetFields) {
-    const fieldIdentifier = contentTypeConfig.targetFields[targetFieldType].fieldIdentfier;
+  for (key in contentTypeConfig.targetFields) {
+    const targetFieldType = contentTypeConfig.targetFields[key].type;
+    const fieldIdentifier = contentTypeConfig.targetFields[key].fieldIdentfier;
     let tagField = tagFields.has(fieldIdentifier) ? tagFields.get(
         fieldIdentifier) : null;
     if (!tagField) {
@@ -202,7 +203,8 @@ TagField.inputSeparator = '|#';
     }
 
     tagField.addAnnotationTypeConfig(targetFieldType, {
-      parentTagId: contentTypeConfig.targetFields[targetFieldType].parentTagId,
+      parentTagId: contentTypeConfig.targetFields[key].parentTagId,
+      subtype: contentTypeConfig.targetFields[key].subtype,
     });
   }
 

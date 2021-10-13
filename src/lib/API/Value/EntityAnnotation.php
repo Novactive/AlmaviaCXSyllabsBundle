@@ -30,4 +30,16 @@ class EntityAnnotation extends Annotation
             return $this->$property;
         }
     }
+
+    /**
+     * @inheritDoc
+     */
+    public function jsonSerialize(): array
+    {
+        return [
+            'score' => $this->score,
+            'text' => $this->text,
+            'type' => $this->type
+        ];
+    }
 }

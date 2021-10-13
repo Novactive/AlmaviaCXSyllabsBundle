@@ -62,14 +62,15 @@ class SyllabsConfiguration
         foreach ($rawConfigurations as $rawConfiguration) {
             foreach ($rawConfiguration['content_type_identifiers'] as $contentTypeIdentifier) {
                 $targetFields = [];
-                foreach ($rawConfiguration['target_fields'] as $targetFieldType => $targetField) {
+                foreach ($rawConfiguration['target_fields'] as $targetField) {
                     $parentTag = is_int($targetField['parent_tag']) ?
                         $this->tagsService->loadTag($targetField['parent_tag']) :
                         $this->tagsService->loadTagByRemoteId($targetField['parent_tag']);
                     $targetFields[] = new TargetFieldConfiguration(
-                        $targetFieldType,
+                        $targetField['type'],
                         $targetField['field_identifier'],
-                        $parentTag
+                        $parentTag,
+                        isset($targetField['subtype']) ? $targetField['subtype'] : ''
                     );
                 }
 
@@ -95,9 +96,11 @@ class SyllabsConfiguration
         foreach ($configurations as $configuration) {
             $targetFields = [];
             foreach ($configuration->getTargetFields() as $targetField) {
-                $targetFields[$targetField->getType()] = [
+                $targetFields[] = [
+                    'type' => $targetField->getType(),
                     'fieldIdentfier' => $targetField->getFieldIdentifier(),
-                    'parentTagId' => $targetField->getParentTag()->id
+                    'parentTagId' => $targetField->getParentTag()->id,
+                    'subtype' => $targetField->getSubtype()
                 ];
             }
             $sourceFields = [];

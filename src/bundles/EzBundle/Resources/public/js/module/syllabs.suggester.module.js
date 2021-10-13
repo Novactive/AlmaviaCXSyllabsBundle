@@ -45,13 +45,16 @@ export default class SyllabsSuggesterModule extends Component {
     for (const annotationType in this.props.annotationTypeConfigs) {
       const annotationTypeConfig = this.props.annotationTypeConfigs[annotationType];
       for (const suggestion of document[annotationType]) {
-        suggestions.push(
+        if (annotationTypeConfig.subtype == '' || suggestion.type == annotationTypeConfig.subtype) {
+          suggestions.push(
             new Suggestion({
               type: annotationType,
               text: suggestion.text,
               parentTagId: annotationTypeConfig.parentTagId,
+              subtype: suggestion.type
             }),
-        );
+          );
+        }
       }
     }
 
@@ -142,8 +145,13 @@ export default class SyllabsSuggesterModule extends Component {
     const types = new Map()
     for(const suggestion of this.state.suggestions) {
       const typeSuggestions = types.get(suggestion.type) || []
+      const suggestionType = suggestion.type;
+      // if (suggestion.subtype != '') {
+      //   const typeSuggestions = types.get(suggestion.type+'.'+suggestion.subtype) || []
+      //   suggestionType = suggestion.type +"."+suggestion.subtype
+      // }
       typeSuggestions.push(suggestion)
-      types.set(suggestion.type, typeSuggestions)
+      types.set(suggestionType, typeSuggestions)
     }
 
     const render = []

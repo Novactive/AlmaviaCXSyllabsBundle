@@ -2,11 +2,12 @@ import React, {Component} from 'react';
 import SyllabsSuggesterModule from './syllabs.suggester.module';
 
 export class Suggestion {
-  constructor({type, text, selected, parentTagId}) {
+  constructor({type, text, selected, parentTagId, subtype}) {
     this.type = type
     this.text = text
     this.selected = selected || false
     this.parentTagId = parentTagId
+    this.subtype = subtype
   }
 }
 
