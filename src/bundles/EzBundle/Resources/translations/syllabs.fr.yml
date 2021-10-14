@@ -3,6 +3,14 @@ suggester:
 
 suggestion:
     type:
-        entities: Entités
-        themes: Thèmes
-        wikitags: Sujets
+        entities:
+            name: Entités
+            person:
+                name: Personne
+            organisation:
+                name: Organisation
+        themes:
+            name: Thèmes
+        wikitags:
+            name: Sujets
+
