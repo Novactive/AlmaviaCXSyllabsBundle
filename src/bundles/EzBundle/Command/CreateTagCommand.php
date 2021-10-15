@@ -128,7 +128,8 @@ class CreateTagCommand extends Command
                 foreach ($targetFields as $targetField) {
                     if (empty($content->getFieldValue($targetField->getFieldIdentifier())->tags)) {
                         $continue = false;
-                        $fields[$targetField->getFieldIdentifier()] = $content->getFieldValue($targetField->getFieldIdentifier());
+                        $targetFieldIdentifier = $targetField->getFieldIdentifier();
+                        $fields[$targetFieldIdentifier] = $content->getFieldValue($targetFieldIdentifier);
                     }
                 }
                 if ($continue) {
@@ -172,8 +173,10 @@ class CreateTagCommand extends Command
                             $syllabsTags = $syllabsDoc[$targetFieldConfig->getType()];
                             if (isset($fields[$targetFieldConfig->getFieldIdentifier()])) {
                                 foreach ($syllabsTags as $syllabsTag) {
-                                    if ($targetFieldConfig->getSubtype() == "" ||
-                                        $syllabsTag->type === $targetFieldConfig->getSubtype()) {
+                                    if (
+                                        $targetFieldConfig->getSubtype() == "" ||
+                                        $syllabsTag->type === $targetFieldConfig->getSubtype()
+                                    ) {
                                         $tags[] = $this->suggestionService->createTag(
                                             $syllabsTag->text,
                                             $targetFieldConfig->getParentTag()->id,
