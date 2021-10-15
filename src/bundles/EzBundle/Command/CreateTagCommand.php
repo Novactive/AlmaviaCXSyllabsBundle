@@ -95,17 +95,11 @@ class CreateTagCommand extends Command
         $sourceFields  = $syllabsConfig->getSourceFields();
         $targetFields  = $syllabsConfig->getTargetFields();
 
-        $orCriterion = [];
-        foreach ($targetFields as $targetField) {
-            $orCriterion[] = new Query\Criterion\IsFieldEmpty($targetField->getFieldIdentifier(), true);
-        }
-
         $query     = new Query();
         $criterion = new Query\Criterion\LogicalAnd(
             [
                 new Query\Criterion\ContentTypeIdentifier($contentType),
-                new Query\Criterion\Subtree($location->pathString),
-                new Query\Criterion\LogicalOr($orCriterion)
+                new Query\Criterion\Subtree($location->pathString)
             ]
         );
 
@@ -129,6 +123,19 @@ class CreateTagCommand extends Command
                 $content         = $searchHit->valueObject;
                 $currentLanguage = $content->versionInfo->initialLanguageCode;
 
+                $continue = true;
+                $fields   = [];
+                foreach ($targetFields as $targetField) {
+                    if (empty($content->getFieldValue($targetField->getFieldIdentifier())->tags)) {
+                        $continue = false;
+                        $fields[$targetField->getFieldIdentifier()] = $content->getFieldValue($targetField->getFieldIdentifier());
+                    }
+                }
+                if ($continue) {
+                    $progressBar->advance();
+                    continue;
+                }
+
                 $doc['id'] = $content->id;
                 foreach ($sourceFields as $sourceFieldConfiguration) {
                     $fieldContents = [];
@@ -148,7 +155,8 @@ class CreateTagCommand extends Command
                         $content,
                         $currentLanguage,
                         $syllabsDocs,
-                        $targetFields
+                        $targetFields,
+                        $fields
                     ) {
                         $doc = $syllabsDocs[0];
 
@@ -159,19 +167,23 @@ class CreateTagCommand extends Command
                         ];
 
                         $tags = [];
-                        /** @var TargetFieldConfiguration $targetFieldConfiguration */
-                        foreach ($targetFields as $targetFieldConfiguration) {
-                            $syllabsTags = $syllabsDoc[$targetFieldConfiguration->getType()];
-                            foreach ($syllabsTags as $syllabsTag) {
-                                $tags[] = $this->suggestionService->createTag(
-                                    $syllabsTag->text,
-                                    $targetFieldConfiguration->getParentTag(
-                                    )->id,
-                                    $currentLanguage
-                                );
+                        /** @var TargetFieldConfiguration $targetFieldConfig */
+                        foreach ($targetFields as $targetFieldConfig) {
+                            $syllabsTags = $syllabsDoc[$targetFieldConfig->getType()];
+                            if (isset($fields[$targetFieldConfig->getFieldIdentifier()])) {
+                                foreach ($syllabsTags as $syllabsTag) {
+                                    if ($targetFieldConfig->getSubtype() == "" ||
+                                        $syllabsTag->type === $targetFieldConfig->getSubtype()) {
+                                        $tags[] = $this->suggestionService->createTag(
+                                            $syllabsTag->text,
+                                            $targetFieldConfig->getParentTag()->id,
+                                            $currentLanguage
+                                        );
+                                    }
+                                }
+                                $field = $content->getField($targetFieldConfig->getFieldIdentifier());
+                                $this->tagsHelper->addTagsToContent($tags, $field, $content);
                             }
-                            $field = $content->getField($targetFieldConfiguration->getFieldIdentifier());
-                            $this->tagsHelper->addTagsToContent($tags, $field, $content);
                         }
                     }
                 );
