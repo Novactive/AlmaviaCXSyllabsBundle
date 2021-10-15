@@ -92,8 +92,11 @@ export default class SyllabsSuggesterModule extends Component {
   }
 
   renderSuggestionType(type, suggestions) {
+    suggestions.sort(function (a, b) {
+      return a.text.localeCompare(b.text);
+    })
     return <dl key={type}>
-      <dt className={'mb-2'}>{Translator.trans('suggestion.type.'+type, {}, 'syllabs')}</dt>
+      <dt className={'mb-2'}>{Translator.trans('suggestion.type.'+type+'.name', {}, 'syllabs')}</dt>
       {suggestions.map(this.renderSuggestion.bind(this))}
     </dl>
   }
@@ -144,12 +147,13 @@ export default class SyllabsSuggesterModule extends Component {
   renderSuggestionsByType() {
     const types = new Map()
     for(const suggestion of this.state.suggestions) {
-      const typeSuggestions = types.get(suggestion.type) || []
       const suggestionType = suggestion.type;
-      // if (suggestion.subtype != '') {
-      //   const typeSuggestions = types.get(suggestion.type+'.'+suggestion.subtype) || []
-      //   suggestionType = suggestion.type +"."+suggestion.subtype
-      // }
+      if (typeof suggestion.subtype !== 'undefined') {
+        suggestionType = suggestion.type +"."+suggestion.subtype.toLowerCase()
+      }
+
+      const typeSuggestions = types.get(suggestionType) || []
+
       typeSuggestions.push(suggestion)
       types.set(suggestionType, typeSuggestions)
     }
