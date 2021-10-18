@@ -167,9 +167,9 @@ class CreateTagCommand extends Command
                             'wikitags' => $doc->getWikitags()
                         ];
 
-                        $tags = [];
                         /** @var TargetFieldConfiguration $targetFieldConfig */
                         foreach ($targetFields as $targetFieldConfig) {
+                            $tags = [];
                             $syllabsTags = $syllabsDoc[$targetFieldConfig->getType()];
                             if (isset($fields[$targetFieldConfig->getFieldIdentifier()])) {
                                 foreach ($syllabsTags as $syllabsTag) {
