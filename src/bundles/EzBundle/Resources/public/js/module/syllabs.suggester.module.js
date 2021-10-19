@@ -17,6 +17,7 @@ export default class SyllabsSuggesterModule extends Component {
 
     this.state = {
       suggestions: [],
+      loading: true,
       maxHeight: 500
     };
   }
@@ -60,6 +61,7 @@ export default class SyllabsSuggesterModule extends Component {
 
     this.setState({
       suggestions: suggestions,
+      loading: false
     });
   }
 
@@ -146,6 +148,13 @@ export default class SyllabsSuggesterModule extends Component {
 
   renderSuggestionsByType() {
     const types = new Map()
+    if(this.state.loading) {
+      return
+    }
+    if(this.state.suggestions.length === 0 ) {
+      const noItemsMessage = Translator.trans('no_results', {}, 'syllabs')
+      return <p>{noItemsMessage}</p>
+    }
     for(const suggestion of this.state.suggestions) {
       const suggestionType = suggestion.type;
       if (typeof suggestion.subtype !== 'undefined') {
@@ -191,7 +200,7 @@ export default class SyllabsSuggesterModule extends Component {
     let containerClassName = `${componentClassName}`;
     const cancelBtnLabel = Translator.trans(/*@Desc("Cancel")*/ 'cancel.label',
         {}, 'universal_discovery_widget');
-    if (this.state.suggestions.length > 0) {
+    if (!this.state.loading) {
       containerClassName += ' loaded';
     }
     return (
