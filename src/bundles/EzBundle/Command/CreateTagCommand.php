@@ -81,24 +81,25 @@ class CreateTagCommand extends Command
             ->setDescription('Syllabs création de tags')
             ->addArgument('content_type', InputArgument::REQUIRED)
             ->addArgument('parent_location_id', InputArgument::REQUIRED)
-            ->addArgument('limit', InputArgument::OPTIONAL);
+            ->addArgument('limit', InputArgument::OPTIONAL, 'batch limit', 100);
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io          = new SymfonyStyle($input, $output);
 
-        $contentType = $input->getArgument('content_type');
+        $contentTypeIdentifier = $input->getArgument('content_type');
+        $contentType = $this->repository->getContentTypeService()->loadContentTypeByIdentifier($contentTypeIdentifier);
         $location    = $this->repository->getLocationService()->loadLocation($input->getArgument('parent_location_id'));
 
-        $syllabsConfig = $this->syllabsConfiguration->getContentTypeConfiguration($contentType);
+        $syllabsConfig = $this->syllabsConfiguration->getContentTypeConfiguration($contentType->identifier);
         $sourceFields  = $syllabsConfig->getSourceFields();
         $targetFields  = $syllabsConfig->getTargetFields();
 
         $query     = new Query();
         $criterion = new Query\Criterion\LogicalAnd(
             [
-                new Query\Criterion\ContentTypeIdentifier($contentType),
+                new Query\Criterion\ContentTypeIdentifier($contentType->identifier),
                 new Query\Criterion\Subtree($location->pathString)
             ]
         );
@@ -109,7 +110,7 @@ class CreateTagCommand extends Command
         $progressBar    = new ProgressBar($output);
         $searchService  = $this->repository->getSearchService();
 
-        $io->text("Search {$contentType} content to update with Syllabs tags");
+        $io->text("Search {$contentType->getName()} content to update with Syllabs tags");
 
         do {
             $searchResults = $searchService->findContent($query);
