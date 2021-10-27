@@ -52,7 +52,8 @@ export default class SyllabsSuggesterModule extends Component {
               type: annotationType,
               text: suggestion.text,
               parentTagId: annotationTypeConfig.parentTagId,
-              subtype: suggestion.type
+              subtype: suggestion.type,
+              score: suggestion.score
             }),
           );
         }
