@@ -26,7 +26,7 @@ export default class SyllabsSuggestionComponent extends Component {
              checked={this.props.suggestion.selected ? 'checked' : ''}
              onClick={this.props.onClick}
              className="form-check-input"/>
-      {this.props.suggestion.text} (score: {this.props.suggestion.score})
+      {this.props.suggestion.text} (score: {this.props.suggestion.score.toFixed(3)}%)
     </label>
   }
 }

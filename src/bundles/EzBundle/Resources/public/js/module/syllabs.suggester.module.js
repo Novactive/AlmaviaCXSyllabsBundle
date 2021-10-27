@@ -53,7 +53,7 @@ export default class SyllabsSuggesterModule extends Component {
               text: suggestion.text,
               parentTagId: annotationTypeConfig.parentTagId,
               subtype: suggestion.type,
-              score: suggestion.score
+              score: Number.parseFloat(suggestion.score)
             }),
           );
         }
@@ -96,7 +96,7 @@ export default class SyllabsSuggesterModule extends Component {
 
   renderSuggestionType(type, suggestions) {
     suggestions.sort(function (a, b) {
-      return a.text.localeCompare(b.text);
+      return a.score + b.score;
     })
     return <dl key={type}>
       <dt className={'mb-2'}>{Translator.trans('suggestion.type.'+type+'.name', {}, 'syllabs')}</dt>
