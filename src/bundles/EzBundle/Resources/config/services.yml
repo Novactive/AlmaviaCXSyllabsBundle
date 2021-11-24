@@ -34,6 +34,10 @@ services:
     AlmaviaCX\Syllabs\Ez\Service\SuggestionService:
         bind:
             $tagsService: '@eztags.api.service.tags.inner'
+        arguments:
+            $searchHandler: '@ezpublish.spi.search'
+            $cache: '@ezpublish.cache_pool'
+            $persistenceHandler: '@ezpublish.api.persistence_handler'
 
     AlmaviaCX\Bundle\Syllabs\EzBundle\Controller\ApiController: ~
 

@@ -42,9 +42,6 @@ class CreateTagCommand extends Command
     /** @var TagsService */
     protected $tagsService;
 
-    /** @var TagsHelper */
-    protected $tagsHelper;
-
     /**
      * CreateTagCommand constructor.
      *
@@ -53,22 +50,19 @@ class CreateTagCommand extends Command
      * @param SuggestionService    $suggestionService
      * @param SyllabsConfiguration $syllabsConfiguration
      * @param TagsService          $tagsService
-     * @param TagsHelper           $tagsHelper
      */
     public function __construct(
         Repository $repository,
         ProcessService $processService,
         SuggestionService $suggestionService,
         SyllabsConfiguration $syllabsConfiguration,
-        TagsService $tagsService,
-        TagsHelper $tagsHelper
+        TagsService $tagsService
     ) {
         $this->repository           = $repository;
         $this->processService       = $processService;
         $this->suggestionService    = $suggestionService;
         $this->syllabsConfiguration = $syllabsConfiguration;
         $this->tagsService          = $tagsService;
-        $this->tagsHelper           = $tagsHelper;
 
         parent::__construct(self::$defaultName);
     }
@@ -186,7 +180,7 @@ class CreateTagCommand extends Command
                                     }
                                 }
                                 $field = $content->getField($targetFieldConfig->getFieldIdentifier());
-                                $this->tagsHelper->addTagsToContent($tags, $field, $content);
+                                $this->suggestionService->addTagsToContent($tags, $field, $content);
                             }
                         }
                     }

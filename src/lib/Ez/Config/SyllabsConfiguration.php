@@ -14,6 +14,8 @@ use AlmaviaCX\Syllabs\Ez\Value\Configuration\SourceFieldConfiguration;
 use AlmaviaCX\Syllabs\Ez\Value\Configuration\TargetFieldConfiguration;
 use AlmaviaCX\Syllabs\Ez\Value\Configuration\TargetFieldTypeConfiguration;
 use eZ\Publish\API\Repository\ContentTypeService;
+use eZ\Publish\API\Repository\Exceptions\NotFoundException;
+use eZ\Publish\API\Repository\Exceptions\UnauthorizedException;
 use eZ\Publish\Core\MVC\ConfigResolverInterface;
 use Netgen\TagsBundle\API\Repository\TagsService;
 
@@ -63,15 +65,19 @@ class SyllabsConfiguration
             foreach ($rawConfiguration['content_type_identifiers'] as $contentTypeIdentifier) {
                 $targetFields = [];
                 foreach ($rawConfiguration['target_fields'] as $targetField) {
-                    $parentTag = is_int($targetField['parent_tag']) ?
-                        $this->tagsService->loadTag($targetField['parent_tag']) :
-                        $this->tagsService->loadTagByRemoteId($targetField['parent_tag']);
-                    $targetFields[] = new TargetFieldConfiguration(
-                        $targetField['type'],
-                        $targetField['field_identifier'],
-                        $parentTag,
-                        isset($targetField['subtype']) ? $targetField['subtype'] : ''
-                    );
+                    try {
+                        $parentTag = is_int($targetField['parent_tag']) ?
+                            $this->tagsService->loadTag($targetField['parent_tag']) :
+                            $this->tagsService->loadTagByRemoteId($targetField['parent_tag']);
+                        $targetFields[] = new TargetFieldConfiguration(
+                            $targetField['type'],
+                            $targetField['field_identifier'],
+                            $parentTag,
+                            isset($targetField['subtype']) ? $targetField['subtype'] : ''
+                        );
+                    } catch (NotFoundException|UnauthorizedException $e) {
+                        continue;
+                    }
                 }
 
                 $sourceFields = [];
