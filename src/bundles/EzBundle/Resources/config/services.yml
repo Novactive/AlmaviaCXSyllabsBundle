@@ -1,5 +1,6 @@
 parameters:
     almaviacx.default.syllabs.api.url: ~
+    almaviacx.default.syllabs.api.client_config: []
     almaviacx.default.syllabs.config: []
 services:
     # default configuration for services in *this* file
@@ -20,6 +21,7 @@ services:
         decorates: AlmaviaCX\Syllabs\API\HttpClient
         arguments:
             $APIUrl: "$syllabs.api.url;almaviacx$"
+            $config: "$syllabs.api.client_config;almaviacx$"
 
     AlmaviaCX\Syllabs\Ez\Config\SyllabsConfiguration:
 
