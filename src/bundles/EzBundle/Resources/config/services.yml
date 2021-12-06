@@ -24,6 +24,7 @@ services:
             $config: "$syllabs.api.client_config;almaviacx$"
 
     AlmaviaCX\Syllabs\Ez\Config\SyllabsConfiguration:
+    AlmaviaCX\Syllabs\Ez\Config\SyllabsBlacklistConfiguration:
 
     AlmaviaCX\Syllabs\Ez\UI\Config\ConfigProvider:
         tags:

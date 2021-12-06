@@ -59,8 +59,11 @@ class SyllabsConfiguration
      */
     public function getConfigurations(): array
     {
+        if (!empty($this->configuration)) {
+            return $this->configuration;
+        }
+
         $rawConfigurations = $this->getRawConfigurations();
-        $configuration = [];
         foreach ($rawConfigurations as $rawConfiguration) {
             foreach ($rawConfiguration['content_type_identifiers'] as $contentTypeIdentifier) {
                 $targetFields = [];
@@ -85,14 +88,14 @@ class SyllabsConfiguration
                     $sourceFields[] = new SourceFieldConfiguration($sourceFieldType, $fieldsIdentifiers);
                 }
 
-                $configuration[$contentTypeIdentifier] = new ContentTypeConfiguration(
+                $this->configuration[$contentTypeIdentifier] = new ContentTypeConfiguration(
                     $contentTypeIdentifier,
                     $sourceFields,
                     $targetFields
                 );
             }
         }
-        return $configuration;
+        return $this->configuration;
     }
 
     public function getUiConfiguration(): array
