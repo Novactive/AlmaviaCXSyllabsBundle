@@ -121,9 +121,9 @@ class TagField {
     const onConfirm = (suggestions) => {
       jQuery('.tagssuggest', this.container).EzTags('initialize');
 
-      const jstreeEl = jQuery('.tags-tree', this.container)
+      const jstreeEl = jQuery('.tags-selector-tree-wrapper .tags-tree', this.container)
       const addTags = this.addTags.bind(this)
-      if(jstreeEl) {
+      if(jstreeEl.length > 0) {
         jstreeEl.on('refresh.jstree', function (e, data) {
           addTags(suggestions)
         }.bind(this));
