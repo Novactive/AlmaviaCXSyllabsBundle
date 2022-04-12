@@ -54,7 +54,7 @@ class SuggestionService
     {
         $tags   = $this->tagsService->loadTagsByKeyword($keyword, $language);
         foreach ($tags as $tag) {
-            if ($tag->parentTagId == $parentTagId) {
+            if (in_array($parentTagId, $tag->path)) {
                 return $tag;
             }
         }
