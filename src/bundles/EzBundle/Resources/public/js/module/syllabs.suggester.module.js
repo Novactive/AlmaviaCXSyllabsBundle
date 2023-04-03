@@ -157,7 +157,7 @@ export default class SyllabsSuggesterModule extends Component {
       return <p>{noItemsMessage}</p>
     }
     for(const suggestion of this.state.suggestions) {
-      const suggestionType = suggestion.type;
+      let suggestionType = suggestion.type;
       if (typeof suggestion.subtype !== 'undefined') {
         suggestionType = suggestion.type +"."+suggestion.subtype.toLowerCase()
       }
